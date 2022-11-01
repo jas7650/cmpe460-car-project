@@ -47,7 +47,7 @@ enum timer32divider{
 unsigned long  CalcPeriodFromFrequency (double Hz);
 
 
-	
+    
 // ***************** Timer32_1_Init ****************
 // Activate Timer32 Timer 1 interrupts to run user task periodically
 // Inputs:  task is a pointer to a user function
