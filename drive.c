@@ -7,6 +7,8 @@
  * LJBeato
  * 2021
  */
+ 
+ //THIS COMMENT SHOULD ONLY BE IN daniel_dev BRANCH
 
 #include "msp.h"
 #include "./lib/uart.h"
@@ -315,19 +317,8 @@ int main(void) {
         // do a small delay
         myDelay();
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+		
     // create some fake 14-bit camera line data 0 - >2^14 in a 128 short array that utilizes all 14 bits
-
     for (i = 0; i < 128; i++)
         lineData[i] = 4;
     while(1)
