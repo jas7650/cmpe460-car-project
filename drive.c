@@ -7,8 +7,6 @@
  * LJBeato
  * 2021
  */
- 
- //THIS COMMENT SHOULD ONLY BE IN daniel_dev BRANCH
 
 #include "msp.h"
 #include "./lib/uart.h"
@@ -297,7 +295,6 @@ int main(void) {
 
     while(1)
     {
-
         if (g_sendData == TRUE) 
         {
             led1_on();
