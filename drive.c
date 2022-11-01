@@ -23,6 +23,7 @@
 #include "./lib/ControlPins.h"
 #include "./lib/SysTickTimer.h"
 #include "./lib/camera.h"
+#include "./lib/dcmotors.h"
 
 extern  unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
@@ -38,9 +39,6 @@ void main_delay(int del){
 }
 
 int main(void) {
-    int i;
-    int delta;
-    
     //initialize OLED
     OLED_Init();
     OLED_display_on();
@@ -48,11 +46,11 @@ int main(void) {
     OLED_display_on();
     
     //initialize uart
-    uart0_init();
+    //uart0_init();
     
     //initializations
     DisableInterrupts();
-    uart0_init();
+    //uart0_init();
 
     
     LED1_Init();
@@ -60,6 +58,8 @@ int main(void) {
     // remember that we double the desired frequency because we need to account
 
     INIT_Camera();
+	
+		initMotors();
     
     Switch2_Init();
     ControlPin_SI_Init();
@@ -67,5 +67,9 @@ int main(void) {
     EnableSysTickTimer();
 
     EnableInterrupts();
+		
+		while(line[64] > 16000) {
+			driveForward(0.2);
+		}
 }
 
