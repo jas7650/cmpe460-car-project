@@ -22,7 +22,7 @@
 #define OFS_SYSTICK_STCR                                   (0x0000001C)          // SysTick Calibration Value Register 
 
 
-#define DISABLE_SYSTICK_CLOCK	0
+#define DISABLE_SYSTICK_CLOCK    0
 #define ENABLE_SYSTICK_CLOCK   0x00000007
 
 void SysTickTimer_Init(void(*task)(void), unsigned long period);
