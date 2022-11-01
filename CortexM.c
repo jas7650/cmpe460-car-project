@@ -67,7 +67,7 @@
     WFI
     bx      lr
   }
-	
+    
 
 // delay function
 // which delays about 6*ulCount cycles
@@ -86,7 +86,7 @@
 void Clock_Delay1ms(uint32_t n)
 {
   while(n)
-	{
+    {
     delay(8000);   // 1 msec, tuned at 48 MHz
     n--;
   }

@@ -11,6 +11,32 @@
 #include "msp.h"
 #include "./lib/uart.h"
 #include "./lib/TimerA.h"
+#include "./lib/oled.h"
+#include "./lib/led.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "./lib/switches.h"
+#include "./lib/Timer32.h"
+#include "./lib/CortexM.h"
+#include "./lib/Common.h"
+#include "./lib/ADC14.h"
+#include "./lib/ControlPins.h"
+#include "./lib/SysTickTimer.h"
+
+extern  unsigned char OLED_clr_data[1024];
+extern unsigned char OLED_TEXT_ARR[1024];
+extern unsigned char OLED_GRAPH_ARR[1024];
+
+uint16_t lineData[128];
+extern uint16_t line[128];
+extern BOOLEAN g_sendData;
+static char str[100];
+void msdelay(int delay)
+{
+    int i,j;
+    for(i=0;i<delay;i++)
+        for(j=0;j<16000;j++);
+}
 
 /**
  * Waits for a delay (in milliseconds)
@@ -21,6 +47,23 @@ void main_delay(int del){
     volatile int i;
     for (i=0; i<del*50000; i++){
         ;// Do nothing
+    }
+}
+
+void INIT_Camera(void)
+{
+    g_sendData = FALSE;
+    ControlPin_SI_Init();
+    ControlPin_CLK_Init();
+    ADC0_InitSWTriggerCh6();
+}
+
+void myDelay(void)
+{
+    volatile int j = 0;
+    for (j = 0; j < 800000; j++)
+    {
+        ;
     }
 }
 
@@ -211,14 +254,97 @@ int main(void) {
 
 //PWM MAIN SERVO
 int main(void) {
-    // Initialize UART and PWM
+    
+    int i;
+    int delta;
+    
+    //initialize OLED
+    OLED_Init();
+    OLED_display_on();
+    OLED_display_clear();
+    OLED_display_on();
+    
+    //initialize uart
     uart0_init();
-    TIMER_A2_PWM_Init(((SystemCoreClock/8)/50)/2, SERVO_CENTER, 1);
-    main_delay(10);
-    TIMER_A2_PWM_DutyCycle(SERVO_CLOCKWISE, 1);
-    main_delay(10);
-    TIMER_A2_PWM_DutyCycle(SERVO_COUNTER_COUNTER, 1);
-    main_delay(10);
-    TIMER_A2_PWM_DutyCycle(SERVO_CENTER, 1);
+    
+    //initializations
+    DisableInterrupts();
+    uart0_init();
+    uart0_put("\r\nLab5 CAMERA demo\r\n");
+
+    
+    uart0_put("\r\nINIT LEDs\r\n");
+    LED1_Init();
+    LED2_Init();
+    // remember that we double the desired frequency because we need to account
+
+    uart0_put("\r\nINIT Camera CLK and SI\r\n");
+    uart0_put("\r\nINIT ADC\r\n");
+    INIT_Camera();
+    
+    uart0_put("\r\nINIT Switch 2\r\n");
+    Switch2_Init();
+    ControlPin_SI_Init();
+    ControlPin_CLK_Init();
+    EnableSysTickTimer();
+
+
+    uart0_put("\r\nEnable Interrupts\r\n");
+    EnableInterrupts();
+    uart0_put("\r\nInterrupts successfully enabled\r\n");
+
+    while(1)
+    {
+
+        if (g_sendData == TRUE) 
+        {
+            led1_on();
+            // send the array over uart
+            sprintf(str,"%i\n\r",-1); // start value
+            uart0_put(str);
+            for (i = 0; i < 128; i++) 
+            {
+                sprintf(str,"%i\n\r", line[i]);
+                uart0_put(str);
+            }
+            sprintf(str,"%i\n\r",-2); // end value
+            uart0_put(str);
+            led1_off();
+            g_sendData = FALSE;
+        }
+        // do a small delay
+        myDelay();
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    // create some fake 14-bit camera line data 0 - >2^14 in a 128 short array that utilizes all 14 bits
+
+    for (i = 0; i < 128; i++)
+        lineData[i] = 4;
+    while(1)
+    {
+            OLED_write_display(OLED_TEXT_ARR);
+            msdelay(500);
+            OLED_DisplayCameraData(lineData);
+            msdelay(500);
+    }
+    
+    // Initialize UART and PWM
+//    TIMER_A2_PWM_Init(((SystemCoreClock/8)/50)/2, SERVO_CENTER, 1);
+//    main_delay(10);
+//    TIMER_A2_PWM_DutyCycle(SERVO_CLOCKWISE, 1);
+//    main_delay(10);
+//    TIMER_A2_PWM_DutyCycle(SERVO_COUNTER_COUNTER, 1);
+//    main_delay(10);
+//    TIMER_A2_PWM_DutyCycle(SERVO_CENTER, 1);
 }
 

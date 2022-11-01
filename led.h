@@ -11,11 +11,8 @@
 
 void LED1_Init(void);
 void LED2_Init(void);
-void LED1_On(void);
-void LED1_Off(void);
-void LED2_Off(void);
-void LED2_Red(void);
-void LED2_Green(void);
-void LED2_Blue(void);
-BOOLEAN LED1_State(void);
-void LED2_On(int color);
+void led1_on(void);
+void led1_off(void);
+BOOLEAN led1_state(void);
+void led2_on(int color);
+void led2_off(void);
