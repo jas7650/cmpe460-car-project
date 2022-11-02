@@ -62,8 +62,6 @@ int main(void) {
 		initMotors();
     
     Switch2_Init();
-    ControlPin_SI_Init();
-    ControlPin_CLK_Init();
     EnableSysTickTimer();
 
     EnableInterrupts();

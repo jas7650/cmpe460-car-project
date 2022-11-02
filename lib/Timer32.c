@@ -21,7 +21,7 @@ static unsigned long timer2Period;
 unsigned long  CalcPeriodFromFrequency (double Hz)
 {
     double period = 0.0;
-    period = (double)SystemCoreClock/Hz;
+    period = (double)12000000/Hz;
     period = period;   // we divide by 2 because we want an interrupt for both the rising edge and the falling edge
     return (unsigned long) period;
 }
