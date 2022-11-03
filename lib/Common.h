@@ -1,3 +1,4 @@
+//ff
 #ifndef _COMMON_
 #define _COMMON_
 

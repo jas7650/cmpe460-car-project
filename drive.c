@@ -59,20 +59,21 @@ int main(void) {
 
     INIT_Camera();
 	
-		initMotors();
+	initMotors();
     
-		Switch1_Init();
+	Switch1_Init();
     Switch2_Init();
     EnableSysTickTimer();
 
     EnableInterrupts();
 		
-		while(1) {
-			int i = 0;
-			smoothCameraData();
-			for(i = 0; i < 128; i++) {
-				binaryCameraData[i] = binarizeCameraData(line[i], threshold);
-			}
+	while(1) {
+		int i = 0;
+		smoothCameraData();
+		for(i = 0; i < 128; i++) {
+            binaryCameraData[i] = binarizeCameraData(line[i], threshold);
 		}
+		
+	}
 }
 

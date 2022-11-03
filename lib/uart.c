@@ -1,4 +1,4 @@
-/*
+/*ff
  * File: uart.c
  * Purpose: Provide UART routines for serial IO
  */
