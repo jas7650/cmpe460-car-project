@@ -68,9 +68,10 @@ int main(void) {
     EnableInterrupts();
 		
 		while(1) {
+			int i = 0;
 			smoothCameraData();
-			for(int i = 0; i < 128; i++) {
-				binaryCameraData[i] = *binarizeCameraData(line[i], threshold);
+			for(i = 0; i < 128; i++) {
+				binaryCameraData[i] = binarizeCameraData(line[i], threshold);
 			}
 		}
 }

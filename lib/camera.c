@@ -28,7 +28,8 @@ uint16_t fivePointAverage(uint16_t a, uint16_t b, uint16_t c, uint16_t d, uint16
 }
 
 void smoothCameraData() {
-	for(int i = 2; i < 126; i++) {
+	int i;
+	for(i = 2; i < 126; i++) {
 		line[i] = fivePointAverage(line[i-2], line[i-1], line[i], line[i+1], line[i+2]);
 	}
 }
