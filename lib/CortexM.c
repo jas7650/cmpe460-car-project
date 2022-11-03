@@ -1,4 +1,4 @@
-// CortexM.c
+// CortexM.cff
 // Cortex M registers and basic functions used in these labs
 // Daniel and Jonathan Valvano
 // December 12, 2018

@@ -24,12 +24,15 @@
 #include "./lib/SysTickTimer.h"
 #include "./lib/camera.h"
 #include "./lib/dcmotors.h"
+#include "./lib/camera.h"
 
 extern  unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
 extern unsigned char OLED_GRAPH_ARR[1024];
 
 extern uint16_t line[128];
+uint16_t binaryCameraData[128];
+static uint16_t threshold = 15000;
 
 void main_delay(int del){
     volatile int i;
@@ -50,26 +53,27 @@ int main(void) {
     
     //initializations
     DisableInterrupts();
-    //uart0_init();
-
-    
+   
     LED1_Init();
     LED2_Init();
-    // remember that we double the desired frequency because we need to account
 
     INIT_Camera();
 	
-		initMotors();
+	initMotors();
     
+	Switch1_Init();
     Switch2_Init();
-    ControlPin_SI_Init();
-    ControlPin_CLK_Init();
     EnableSysTickTimer();
 
     EnableInterrupts();
 		
-		while(line[64] > 16000) {
-			driveForward(0.2);
+	while(1) {
+		int i = 0;
+		smoothCameraData();
+		for(i = 0; i < 128; i++) {
+            binaryCameraData[i] = binarizeCameraData(line[i], threshold);
 		}
+		
+	}
 }
 

@@ -1,4 +1,4 @@
-// ADC14.c
+// ADC14.cff
 // Runs on MSP432
 // ADC input, software trigger, 14-bit conversion,
 // 2.5 V static (always on) reference

@@ -1,4 +1,4 @@
-/*  LJBeato
+/*  LJBeatoff
     2021
     TimerA functionality to drive DC motor
     and Servo Motor
