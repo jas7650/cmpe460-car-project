@@ -24,20 +24,20 @@ void INIT_Camera(void) {
 }
 
 uint16_t fivePointAverage(uint16_t a, uint16_t b, uint16_t c, uint16_t d, uint16_t e) {
-	return (a + b + c + d + e)/5;
+    return (a + b + c + d + e)/5;
 }
 
-void smoothCameraData() {
-	int i;
-	for(i = 2; i < 126; i++) {
-		line[i] = fivePointAverage(line[i-2], line[i-1], line[i], line[i+1], line[i+2]);
-	}
+void smoothCameraData(void) {
+    int i;
+    for(i = 2; i < 126; i++) {
+        line[i] = fivePointAverage(line[i-2], line[i-1], line[i], line[i+1], line[i+2]);
+    }
 }
 
 uint16_t binarizeCameraData(uint16_t lineVal, uint16_t threshold) {
-	if(lineVal > threshold) {
-		return 1;
-	} else {
-		return 0;
-	}
+    if(lineVal > threshold) {
+        return 1;
+    } else {
+        return 0;
+    }
 }

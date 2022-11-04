@@ -7,14 +7,12 @@
  * LJBeato
  * 2021
  */
-
-#include "msp.h"
-#include "./lib/uart.h"
-#include "./lib/TimerA.h"
-#include "./lib/oled.h"
-#include "./lib/led.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "msp.h"
+#include "./lib/uart.h"
+#include "./lib/oled.h"
+#include "./lib/led.h"
 #include "./lib/switches.h"
 #include "./lib/Timer32.h"
 #include "./lib/CortexM.h"
@@ -23,7 +21,7 @@
 #include "./lib/ControlPins.h"
 #include "./lib/SysTickTimer.h"
 #include "./lib/camera.h"
-#include "./lib/dcmotors.h"
+#include "./lib/motors.h"
 #include "./lib/camera.h"
 
 extern  unsigned char OLED_clr_data[1024];
@@ -59,25 +57,25 @@ int main(void) {
     LED2_Init();
 
     INIT_Camera();
-	
-	initDCMotors();
     
-	Switch1_Init();
+    initDCMotors();
+    
+    Switch1_Init();
     Switch2_Init();
     EnableSysTickTimer();
 
     EnableInterrupts();
-		
-	while(1) {
-		int i = 0;
-		smoothCameraData();
+        
+    while(1) {
+        int i = 0;
+        smoothCameraData();
         uart0_put("[");
-		for(i = 0; i < 128; i++) {
+        for(i = 0; i < 128; i++) {
             binaryCameraData[i] = binarizeCameraData(line[i], threshold);
             sprintf(str, "%i", binaryCameraData[i]);
             uart0_put(str);
-		}
+        }
         uart0_put("]\r\n");
-	}
+    }
 }
 
