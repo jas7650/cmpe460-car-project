@@ -70,11 +70,11 @@ int main(void) {
 		
 	while(1) {
 		int i = 0;
-		smoothCameraData();
+		//smoothCameraData();
         uart0_put("[");
 		for(i = 0; i < 128; i++) {
-            binaryCameraData[i] = binarizeCameraData(line[i], threshold);
-            sprintf(str, "%i", binaryCameraData[i]);
+            //binaryCameraData[i] = binarizeCameraData(line[i], threshold);
+            sprintf(str, "%i,", line[i]);
             uart0_put(str);
 		}
         uart0_put("]\r\n");
