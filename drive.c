@@ -25,6 +25,7 @@
 #include "./lib/camera.h"
 
 #define CENTER_SHIFT 20
+#define THRESHOLD 12000
 
 extern  unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
@@ -32,9 +33,8 @@ extern unsigned char OLED_GRAPH_ARR[1024];
 
 extern uint16_t line[128];
 extern BOOLEAN g_sendData;
-uint16_t binaryCameraData[128];
-uint16_t finalCameraData[128];
-static uint16_t threshold = 12000;
+extern uint16_t binaryCameraData[128];
+extern uint16_t finalCameraData[128];
 static char str[100];
 
 void main_delay(int del){
@@ -72,21 +72,9 @@ int main(void) {
         
     while(1) {
         int i = 0;
-        //smoothCameraData();
-        //uart0_put("[");
-        for(i = 0; i < 128; i++) {
-            binaryCameraData[i] = binarizeCameraData(line[i], threshold);
-            //sprintf(str, "%i", binaryCameraData[i]);
-            //uart0_put(str);
-        }
-        for(i = 0; i < 128; i++) {
-            if(i < CENTER_SHIFT) {
-                finalCameraData[i] = 0;
-            }else {
-                finalCameraData[i] = binaryCameraData[i - CENTER_SHIFT];
-            }
-        }
-        //uart0_put("]\r\n");
+        smoothCameraData();
+        binarizeCameraData(THRESHOLD);
+        center_camera_data(CENTER_SHIFT);
         if(g_sendData == TRUE) {
             OLED_DisplayCameraData(finalCameraData);
             g_sendData = FALSE;

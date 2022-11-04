@@ -4,8 +4,8 @@
 #include <stdio.h>
 
 #define SERVO_CENTER 7.5/100
-#define SERVO_CLOCKWISE 5/100.0
-#define SERVO_COUNTER_CLOCKWISE 10/100.0
+#define SERVO_RIGHT 5/100.0
+#define SERVO_LEFT 10/100.0
 
 void initDCMotors(void);
 void initServoMotor(void);
