@@ -8,18 +8,20 @@
 #include "ADC14.h"
 #include "uart.h"
 #include "led.h"
+#include "oled.h"
 
 extern uint32_t SystemCoreClock;
 
 // default SI integration time is 7.5ms = 133Hz
 //
 #define INTEGRATION_TIME .0075f
+#define SIMULATED_CAMERA_CLOCK_FREQ 3000000
 
 // default CLK frequency of the camera 180KHz (assume 48MHz clock)
 // NOTE: we have to double 50000, because we need a clock for the rising edge and one for the falling edge.
 //#define HIGH_CLOCK_SPEED 48000000
 
-#define CLK_PERIOD ((double)SystemCoreClock/180000.0) 
+#define CLK_PERIOD ((double)SystemCoreClock/180000.0)
 
 // ADC_In() gets the latest value from the ADC
 // ADC will be P4.7 A6
@@ -43,9 +45,10 @@ void SI_Handler(void)
     if ((P5->OUT & CLK) != 0)
         P5->OUT &= ~CLK; // set the clock low in case it was high.
     // Read the TSL1401 instructions for SI, CLCK to start the data transfer process
-    P5->OUT |= BIT5;
+    P5->OUT |= SI;
     P5->OUT |= CLK;
-    P5->OUT &= ~BIT5;
+    P5->OUT &= ~SI;
+    P5->OUT &= ~CLK;
     // OK, Data should be ready to clock out, so start the clock
     // Start the clock after we issues a SI pulse.
     EnableSysTickTimer();                            
@@ -67,13 +70,14 @@ void ControlPin_SI_Init()
     // frequency of 133 Hz works OK, but could use more light
     // so try 50Hz?
     // Go with 50Hz for now - integration period of 20ms
-    //unsigned long period = CalcPeriodFromFrequency (1.0/(double)INTEGRATION_TIME);
-    unsigned long period = 48000000/(1.0/(double)INTEGRATION_TIME);
+    unsigned long period = CalcPeriodFromFrequency (1.0/(double)INTEGRATION_TIME);
+    //unsigned long period = SIMULATED_CAMERA_CLOCK_FREQ/(1.0/(double)INTEGRATION_TIME);
     // initialize P5.5 and make it output (P5.5 SI Pin)
-    P5->SEL0 &= ~BIT5;
-    P5->SEL1 &= ~BIT5;
-    P5->DIR |= BIT5;
-    P5->DS |= BIT5;
+    P5->SEL0 &= ~SI;
+    P5->SEL1 &= ~SI;
+    P5->DIR |= SI;
+    P5->OUT &= ~SI;
+    P5->DS |= SI;
     // start Timer
     Timer32_1_Init(*SI_Handler, period, T32DIV1);
 }
@@ -88,11 +92,12 @@ void ControlPin_SI_Init()
 void ControlPin_CLK_Init()
 {
     // use 200000 to make a 100K clock, 1 interrupt for each edge
-    //unsigned long period = CalcPeriodFromFrequency (200000);
-    unsigned long period = 240;
+    unsigned long period = CalcPeriodFromFrequency (200000);
+    //unsigned long period = SIMULATED_CAMERA_CLOCK_FREQ/200000;
     // initialize P5.4 and make it output (P5.4 CLK Pin)
     P5->SEL0 &= ~BIT4;
     P5->SEL1 &= ~BIT4;
+    P5->OUT &= ~BIT4;
     P5->DIR |= BIT4;
     P5->DS |= BIT4;
     // if the period is based on a 48MHz clock, each tick would be 20.83 ns

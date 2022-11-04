@@ -14,7 +14,7 @@ void EnableSysTickTimer(void)
 {
     // enable SysTick with core clock and interrupts
     //SYSTICK_STCSR
-    SYSTICK_STCSR |= BIT0;
+    SYSTICK_STCSR |= (BIT0 | BIT1 | BIT2);
 }
 
 //
@@ -24,7 +24,7 @@ void DisableSysTickTimer(void)
 {
     // disable SysTick with core clock and interrupts 
     // SYSTICK_STCSR
-    SYSTICK_STCSR &= ~BIT0;
+    SYSTICK_STCSR &= ~(BIT0 | BIT1 | BIT2);
 }
 // numIntsPerSec is equal to the number is the 
 // number of times per second the SysTickHandler is going to be called.
@@ -71,8 +71,8 @@ void SysTickTimer_Init(void(*task)(void), unsigned long period)
     //  1 TICKINT R/W 0h
     //  0 ENABLE R/W 0h Enable SysTick counter
     //    0b (R/W) = Counter disabled
-    SYSTICK_STCSR |= BIT2;
-    SYSTICK_STCSR |= BIT1;
+    //SYSTICK_STCSR |= BIT2; //maybe omit
+    //SYSTICK_STCSR |= BIT1;
  
     // 4) enable SysTick with core clock and interrupts    
     // SYSTICK_STCSR
