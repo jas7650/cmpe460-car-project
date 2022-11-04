@@ -1,17 +1,11 @@
-/*  LJBeatoff
-    2021
-    TimerA functionality to drive DC motor
-    and Servo Motor
- */
 #include "msp.h"
-#include <stdint.h>
-#include <stdio.h>
-#include "TimerA.h"
 #include "uart.h"
+#include "motors.h"
 
 // Make these arrays 5 deep, since we are using indexes 1-4 for the pins
 static uint32_t DEFAULT_PERIOD_A0[5] = {0,0,0,0,0};
 static uint32_t DEFAULT_PERIOD_A2[5] = {0,0,0,0,0};
+
 //***************************PWM_Init*******************************
 // PWM output on P2.4, P2.5, P2.6, P2.7
 // Inputs:  period of P2.4...P2.7 is number of counts before output changes state
@@ -77,6 +71,22 @@ int TIMER_A0_PWM_Init(uint16_t period, double percentDutyCycle, uint16_t pin)
 void TIMER_A0_PWM_DutyCycle(double percentDutyCycle, uint16_t pin){
     TIMER_A0->CCR[pin] = (uint16_t) (percentDutyCycle * (double)DEFAULT_PERIOD_A0[pin]);
 }
+ 
+void initDCMotors() {
+    P3->SEL0 &= ~BIT(6);
+    P3->SEL1 &= ~BIT(6);
+    P3->DIR |= BIT(6);
+    P3->OUT |= BIT(6);
+    P3->SEL0 &= ~BIT(7);
+    P3->SEL1 &= ~BIT(7);
+    P3->DIR |= BIT(7);
+    P3->OUT |= BIT(7);
+    TIMER_A0_PWM_Init(SystemCoreClock/20000, 0.0, 1); //Motor 1
+    TIMER_A0_PWM_Init(SystemCoreClock/20000, 0.0, 2); //Motor 1
+    
+    TIMER_A0_PWM_Init(SystemCoreClock/20000, 0.0, 3); //Motor 2
+    TIMER_A0_PWM_Init(SystemCoreClock/20000, 0.0, 4); //Motor 2
+}
 
 //***************************PWM_Init*******************************
 // PWM output on P5.6
@@ -135,3 +145,34 @@ void TIMER_A2_PWM_DutyCycle(double percentDutyCycle, uint16_t pin)
     TIMER_A2->CCR[pin] = (uint16_t) (percentDutyCycle * (double)DEFAULT_PERIOD_A2[pin]);
 }
 
+void initServoMotor() {
+    TIMER_A2_PWM_Init(((SystemCoreClock/8)/50)/2, SERVO_CENTER, 1);
+}
+
+void driveForward(double dutyCycle) {
+    TIMER_A0_PWM_DutyCycle(dutyCycle, 1);
+    TIMER_A0_PWM_DutyCycle(0, 2);
+    
+    TIMER_A0_PWM_DutyCycle(dutyCycle, 3);
+    TIMER_A0_PWM_DutyCycle(0, 4);
+}
+
+void stopWheels() {
+    TIMER_A0_PWM_DutyCycle(0.0, 1);
+    TIMER_A0_PWM_DutyCycle(0.0, 2);
+    
+    TIMER_A0_PWM_DutyCycle(0.0, 3);
+    TIMER_A0_PWM_DutyCycle(0.0, 4);
+}
+
+void turnLeft() {
+    TIMER_A2_PWM_DutyCycle(SERVO_CLOCKWISE, 1);
+}
+
+void turnRight() {
+    TIMER_A2_PWM_DutyCycle(SERVO_COUNTER_CLOCKWISE, 1);
+}
+
+void centerWheels() {
+    TIMER_A2_PWM_DutyCycle(SERVO_CENTER, 1);
+}

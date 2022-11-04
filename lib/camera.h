@@ -10,8 +10,10 @@
 #include "ADC14.h"
 #include "ControlPins.h"
 #include "SysTickTimer.h"
+#include <stdint.h>
+#include <stdio.h>
 
 void INIT_Camera(void);
 uint16_t fivePointAverage(uint16_t a, uint16_t b, uint16_t c, uint16_t d, uint16_t e);
-void smoothCameraData();
-uint16_t binarizeCameraData();
+void smoothCameraData(void);
+uint16_t binarizeCameraData(uint16_t lineVal, uint16_t threshold);
