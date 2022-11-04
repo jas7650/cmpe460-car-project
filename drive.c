@@ -29,6 +29,7 @@ extern unsigned char OLED_TEXT_ARR[1024];
 extern unsigned char OLED_GRAPH_ARR[1024];
 
 extern uint16_t line[128];
+extern BOOLEAN g_sendData;
 uint16_t binaryCameraData[128];
 static uint16_t threshold = 16300;
 static char str[100];
@@ -57,7 +58,6 @@ int main(void) {
     LED2_Init();
 
     INIT_Camera();
-    ADC0_InitSWTriggerCh6();
     
     initDCMotors();
     
@@ -68,9 +68,17 @@ int main(void) {
     EnableInterrupts();
         
     while(1) {
-        int i = 0;
-        smoothCameraData();
-        OLED_DisplayCameraData(line);
+        //int i = 0;
+        //smoothCameraData();
+        /*
+        for(i = 0; i < 128; i++) {
+            binaryCameraData[i] = binarizeCameraData(line[i], threshold);
+        }*/
+        if(g_sendData == TRUE) {
+            OLED_DisplayCameraData(line);
+            g_sendData = FALSE;
+        }
+        
     }
 }
 

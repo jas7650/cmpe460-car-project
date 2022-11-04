@@ -15,6 +15,9 @@ extern uint16_t line[128];
 extern BOOLEAN g_sendData;
 
 //static char str[100];
+uint16_t deltaR;
+uint16_t deltaL;
+uint16_t center;
 
 void INIT_Camera(void) {
     g_sendData = FALSE;
@@ -41,3 +44,15 @@ uint16_t binarizeCameraData(uint16_t lineVal, uint16_t threshold) {
         return 0;
     }
 }
+/*
+void calc_delta_right(uint16_t line[]) {
+    int i;
+    center = line[64];
+    int count = 0;
+    for(i = 15; i < 64; i++) {
+        if(line[i] == 0) {
+            count++;
+        }
+    }
+    
+}*/
