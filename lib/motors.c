@@ -169,8 +169,16 @@ void turnLeft() {
     TIMER_A2_PWM_DutyCycle(SERVO_LEFT, 1);
 }
 
+void turnHalfLeft() {
+    TIMER_A2_PWM_DutyCycle(SERVO_HALF_LEFT, 1);
+}
+
 void turnRight() {
     TIMER_A2_PWM_DutyCycle(SERVO_RIGHT, 1);
+}
+
+void turnHalfRight() {
+    TIMER_A2_PWM_DutyCycle(SERVO_HALF_RIGHT, 1);
 }
 
 void centerWheels() {
