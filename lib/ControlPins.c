@@ -67,7 +67,8 @@ void ControlPin_SI_Init()
     // frequency of 133 Hz works OK, but could use more light
     // so try 50Hz?
     // Go with 50Hz for now - integration period of 20ms
-    unsigned long period = CalcPeriodFromFrequency (1.0/(double)INTEGRATION_TIME);
+    //unsigned long period = CalcPeriodFromFrequency (1.0/(double)INTEGRATION_TIME);
+    unsigned long period = 360000;
     // initialize P5.5 and make it output (P5.5 SI Pin)
     P5->SEL0 &= ~BIT5;
     P5->SEL1 &= ~BIT5;
@@ -87,7 +88,8 @@ void ControlPin_SI_Init()
 void ControlPin_CLK_Init()
 {
     // use 200000 to make a 100K clock, 1 interrupt for each edge
-    unsigned long period = CalcPeriodFromFrequency (200000);
+    //unsigned long period = CalcPeriodFromFrequency (200000);
+    unsigned long period = 240;
     // initialize P5.4 and make it output (P5.4 CLK Pin)
     P5->SEL0 &= ~BIT4;
     P5->SEL1 &= ~BIT4;

@@ -30,7 +30,7 @@ extern unsigned char OLED_GRAPH_ARR[1024];
 
 extern uint16_t line[128];
 uint16_t binaryCameraData[128];
-static uint16_t threshold = 15000;
+static uint16_t threshold = 16300;
 static char str[100];
 
 void main_delay(int del){
@@ -57,6 +57,7 @@ int main(void) {
     LED2_Init();
 
     INIT_Camera();
+    ADC0_InitSWTriggerCh6();
     
     initDCMotors();
     
@@ -69,13 +70,7 @@ int main(void) {
     while(1) {
         int i = 0;
         smoothCameraData();
-        uart0_put("[");
-        for(i = 0; i < 128; i++) {
-            binaryCameraData[i] = binarizeCameraData(line[i], threshold);
-            sprintf(str, "%i", binaryCameraData[i]);
-            uart0_put(str);
-        }
-        uart0_put("]\r\n");
+        OLED_DisplayCameraData(line);
     }
 }
 

@@ -14,7 +14,7 @@
 extern uint16_t line[128];
 extern BOOLEAN g_sendData;
 
-static char str[100];
+//static char str[100];
 
 void INIT_Camera(void) {
     g_sendData = FALSE;
