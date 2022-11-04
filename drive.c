@@ -78,6 +78,7 @@ int main(void) {
             OLED_DisplayCameraData(line);
             g_sendData = FALSE;
         }
+        
     }
 }
 

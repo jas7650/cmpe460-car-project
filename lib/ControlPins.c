@@ -14,8 +14,8 @@ extern uint32_t SystemCoreClock;
 
 // default SI integration time is 7.5ms = 133Hz
 //
-#define INTEGRATION_TIME .0075f
-#define SIMULATED_CAMERA_CLOCK_FREQ 3000000
+#define INTEGRATION_TIME .001f
+#define SIMULATED_CAMERA_CLOCK_FREQ 48000000
 
 // default CLK frequency of the camera 180KHz (assume 48MHz clock)
 // NOTE: we have to double 50000, because we need a clock for the rising edge and one for the falling edge.
@@ -33,6 +33,7 @@ static long pixelCounter = 0;
 
 uint16_t line[128];
 BOOLEAN g_sendData;
+char str[128];
 
 ////////////////////////////////////////////
 //
@@ -70,8 +71,8 @@ void ControlPin_SI_Init()
     // frequency of 133 Hz works OK, but could use more light
     // so try 50Hz?
     // Go with 50Hz for now - integration period of 20ms
-    unsigned long period = CalcPeriodFromFrequency (1.0/(double)INTEGRATION_TIME);
-    //unsigned long period = SIMULATED_CAMERA_CLOCK_FREQ/(1.0/(double)INTEGRATION_TIME);
+    //unsigned long period = CalcPeriodFromFrequency (1.0/(double)INTEGRATION_TIME);
+    unsigned long period = SIMULATED_CAMERA_CLOCK_FREQ/(1.0/(double)INTEGRATION_TIME);
     // initialize P5.5 and make it output (P5.5 SI Pin)
     P5->SEL0 &= ~SI;
     P5->SEL1 &= ~SI;
@@ -92,8 +93,8 @@ void ControlPin_SI_Init()
 void ControlPin_CLK_Init()
 {
     // use 200000 to make a 100K clock, 1 interrupt for each edge
-    unsigned long period = CalcPeriodFromFrequency (200000);
-    //unsigned long period = SIMULATED_CAMERA_CLOCK_FREQ/200000;
+    //unsigned long period = CalcPeriodFromFrequency (200000);
+    unsigned long period = SIMULATED_CAMERA_CLOCK_FREQ/200000;
     // initialize P5.4 and make it output (P5.4 CLK Pin)
     P5->SEL0 &= ~BIT4;
     P5->SEL1 &= ~BIT4;
