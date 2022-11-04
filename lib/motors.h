@@ -4,17 +4,13 @@
 #include <stdio.h>
 
 #define SERVO_CENTER 7.5/100
-#define SERVO_CLOCKWISE 5/100.0
-#define SERVO_COUNTER_CLOCKWISE 10/100.0
+#define SERVO_LEFT 5/100.0
+#define SERVO_RIGHT 10/100.0
 
-void initDCMotors(void);
-void initServoMotor(void);
-void driveForward(double dutyCycle);
-void stopWheels(void);
-void turnLeft(void);
-void turnRight(void);
-void centerWheels(void);
-int TIMER_A0_PWM_Init(uint16_t period, double percentDutyCycle, uint16_t pin);
-void TIMER_A2_PWM_DutyCycle(double percentDutyCycle, uint16_t pin);
-int TIMER_A2_PWM_Init(uint16_t period, double percentDutyCycle, uint16_t pin);
-void TIMER_A2_PWM_DutyCycle(double percentDutyCycle, uint16_t pin);
+void init_dc_motors(void);
+void init_servo_motor(void);
+void drive_forward(double dutyCycle);
+void stop_wheels(void);
+void turn_left(void);
+void turn_right(void);
+void center_wheels(void);

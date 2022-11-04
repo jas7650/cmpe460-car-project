@@ -143,5 +143,5 @@ unsigned int ADC_In(void)
     // ADC14->MEM[0]
     adcIn = ADC14->MEM[0];
         
-      return adcIn; // 4) return result 0 to 16383
+    return adcIn; // 4) return result 0 to 16383
 }

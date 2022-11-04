@@ -1,4 +1,3 @@
-//ff
 #include "msp.h"
 #include "oled.h"
 #include "i2c.h"

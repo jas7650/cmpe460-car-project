@@ -23,6 +23,7 @@
 #include "./lib/camera.h"
 #include "./lib/motors.h"
 #include "./lib/camera.h"
+#include "./lib/oled.h"
 
 extern  unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
@@ -58,24 +59,26 @@ int main(void) {
 
     INIT_Camera();
     
-    initDCMotors();
+    init_dc_motors();
     
     Switch1_Init();
     Switch2_Init();
     EnableSysTickTimer();
-
+    
+    ADC0_InitSWTriggerCh6();
+    
     EnableInterrupts();
+    
         
     while(1) {
         int i = 0;
         smoothCameraData();
-        uart0_put("[");
-        for(i = 0; i < 128; i++) {
-            binaryCameraData[i] = binarizeCameraData(line[i], threshold);
-            sprintf(str, "%i", binaryCameraData[i]);
-            uart0_put(str);
-        }
-        uart0_put("]\r\n");
+//        for(i = 0; i < 128; i++) {
+//            binaryCameraData[i] = binarizeCameraData(line[i], threshold);
+//            sprintf(str, "%i, ", line[i]);
+//            uart0_put(str);
+//        }
+        OLED_DisplayCameraData(line);
     }
 }
 

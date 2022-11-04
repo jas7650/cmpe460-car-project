@@ -72,7 +72,7 @@ void TIMER_A0_PWM_DutyCycle(double percentDutyCycle, uint16_t pin){
     TIMER_A0->CCR[pin] = (uint16_t) (percentDutyCycle * (double)DEFAULT_PERIOD_A0[pin]);
 }
  
-void initDCMotors() {
+void init_dc_motors() {
     P3->SEL0 &= ~BIT(6);
     P3->SEL1 &= ~BIT(6);
     P3->DIR |= BIT(6);
@@ -88,39 +88,30 @@ void initDCMotors() {
     TIMER_A0_PWM_Init(SystemCoreClock/20000, 0.0, 4); //Motor 2
 }
 
-//***************************PWM_Init*******************************
-// PWM output on P5.6
-// Inputs:  period of P5.6 is number of counts before output changes state
-//          percentDutyCycle (0 -> 1.0)//          duty cycle
-//          pin number (1,2,3,4), but always 1
-// Outputs: none
-int TIMER_A2_PWM_Init(uint16_t period, double percentDutyCycle, uint16_t pin)
-{
+//initializes servo motor with a frequency and position
+void init_servo_motor(void) {
     uint16_t dutyCycle;
     // NOTE: Timer A2 only exposes 1 PWM pin
     // TimerA2.1
-    if (pin == 1)
-    {
-        P5->SEL0 |= BIT(6);
-        P5->SEL1 &= ~BIT(6);
-        P5->DIR |= BIT(6);
-    }
-    else return -2; 
+    P5->SEL0 |= BIT(6);
+    P5->SEL1 &= ~BIT(6);
+    P5->DIR |= BIT(6);
+    
    // NOTE: Setup similar to TimerA0
     // save the period for this timer instance
     // DEFAULT_PERIOD_A0[pin] where pin is the pin number
-    DEFAULT_PERIOD_A2[pin] = period;
+    DEFAULT_PERIOD_A2[1] = ((SystemCoreClock/8)/50)/2;
     // TIMER_A0->CCR[0]
-    TIMER_A2->CCR[0] = period;
+    TIMER_A2->CCR[0] = ((SystemCoreClock/8)/50)/2;
     // TIMER_A0->CCTL[pin]
-      TIMER_A2->CCTL[0] |= BIT(7);
-    TIMER_A2->CCTL[pin] |= BIT(6);
+    TIMER_A2->CCTL[0] |= BIT(7);
+    TIMER_A2->CCTL[1] |= BIT(6);
     // set the duty cycle
-    dutyCycle = (uint16_t) (percentDutyCycle * (double)DEFAULT_PERIOD_A2[pin]);
+    dutyCycle = (uint16_t) (SERVO_CENTER * (double)DEFAULT_PERIOD_A2[1]);
 
     // CCR[n] contains the dutyCycle just calculated, where n is the pin number
     //TIMER_A0->CCR[pin]
-      TIMER_A2->CCR[pin] = dutyCycle;
+    TIMER_A2->CCR[1] = dutyCycle;
     
     // Timer CONTROL register
     // TIMER_A0->CTL
@@ -132,24 +123,10 @@ int TIMER_A2_PWM_Init(uint16_t period, double percentDutyCycle, uint16_t pin)
     //TIMER_A2->EX0 |= BIT(2);
     //TIMER_A2->EX0 |= BIT(1);
     //TIMER_A2->EX0 |= BIT(0);
-    return 0;
-}
-//***************************PWM_Duty1*******************************
-// change duty cycle of PWM output on P5.6
-// Inputs:  percentDutyCycle, pin  (should always be 1 for TimerA2.1)
-//         
-// Outputs: none
-// 
-void TIMER_A2_PWM_DutyCycle(double percentDutyCycle, uint16_t pin)
-{
-    TIMER_A2->CCR[pin] = (uint16_t) (percentDutyCycle * (double)DEFAULT_PERIOD_A2[pin]);
 }
 
-void initServoMotor() {
-    TIMER_A2_PWM_Init(((SystemCoreClock/8)/50)/2, SERVO_CENTER, 1);
-}
-
-void driveForward(double dutyCycle) {
+//drives forward with varying speed
+void drive_forward(double dutyCycle) {
     TIMER_A0_PWM_DutyCycle(dutyCycle, 1);
     TIMER_A0_PWM_DutyCycle(0, 2);
     
@@ -157,7 +134,8 @@ void driveForward(double dutyCycle) {
     TIMER_A0_PWM_DutyCycle(0, 4);
 }
 
-void stopWheels() {
+//stops the car
+void stop_wheels() {
     TIMER_A0_PWM_DutyCycle(0.0, 1);
     TIMER_A0_PWM_DutyCycle(0.0, 2);
     
@@ -165,14 +143,17 @@ void stopWheels() {
     TIMER_A0_PWM_DutyCycle(0.0, 4);
 }
 
-void turnLeft() {
-    TIMER_A2_PWM_DutyCycle(SERVO_CLOCKWISE, 1);
+//turns left by a degree given by an argument
+void turn_left() {
+    TIMER_A2->CCR[1] = (uint16_t) (SERVO_LEFT * (double)DEFAULT_PERIOD_A2[1]);
 }
 
-void turnRight() {
-    TIMER_A2_PWM_DutyCycle(SERVO_COUNTER_CLOCKWISE, 1);
+//turns right by a degree given by an argument
+void turn_right() {
+    TIMER_A2->CCR[1] = (uint16_t) (SERVO_RIGHT * (double)DEFAULT_PERIOD_A2[1]);
 }
 
-void centerWheels() {
-    TIMER_A2_PWM_DutyCycle(SERVO_CENTER, 1);
+//turns the wheels back to center
+void center_wheels() {
+    TIMER_A2->CCR[1] = (uint16_t) (SERVO_CENTER * (double)DEFAULT_PERIOD_A2[1]);
 }
