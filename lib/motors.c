@@ -166,11 +166,11 @@ void stopWheels() {
 }
 
 void turnLeft() {
-    TIMER_A2_PWM_DutyCycle(SERVO_CLOCKWISE, 1);
+    TIMER_A2_PWM_DutyCycle(SERVO_LEFT, 1);
 }
 
 void turnRight() {
-    TIMER_A2_PWM_DutyCycle(SERVO_COUNTER_CLOCKWISE, 1);
+    TIMER_A2_PWM_DutyCycle(SERVO_RIGHT, 1);
 }
 
 void centerWheels() {

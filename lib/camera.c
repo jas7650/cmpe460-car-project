@@ -13,6 +13,8 @@
 
 extern uint16_t line[128];
 extern BOOLEAN g_sendData;
+uint16_t binaryCameraData[128];
+uint16_t finalCameraData[128];
 
 //static char str[100];
 uint16_t deltaR;
@@ -37,22 +39,46 @@ void smoothCameraData(void) {
     }
 }
 
-uint16_t binarizeCameraData(uint16_t lineVal, uint16_t threshold) {
-    if(lineVal > threshold) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-/*
-void calc_delta_right(uint16_t line[]) {
+void binarizeCameraData(uint16_t threshold) {
     int i;
-    center = line[64];
-    int count = 0;
-    for(i = 15; i < 64; i++) {
-        if(line[i] == 0) {
-            count++;
+    for(i = 0; i < 128; i++) {
+        if(line[i] > threshold) {
+            binaryCameraData[i] = 16383;
+        } else {
+            binaryCameraData[i] = 0;
         }
     }
-    
-}*/
+}
+
+void center_camera_data(int shiftVal) {
+    int i;
+    for(i = 0; i < 128; i++) {
+        if(i < shiftVal) {
+            finalCameraData[i] = 0;
+        }else {
+            finalCameraData[i] = binaryCameraData[i - shiftVal];
+        }
+    }
+}
+
+int calc_delta_right(uint16_t line[]) {
+    int i;
+    int countZeros = 0;
+    for(i = 64; i < 128; i++) {
+        if(line[i] == 0) {
+            countZeros++;
+        }
+    }
+    return countZeros;
+}
+
+int calc_delta_left(uint16_t line[]) {
+    int i;
+    int countZeros = 0;
+    for(i = 0; i < 64; i++) {
+        if(line[i] == 0) {
+            countZeros++;
+        }
+    }
+    return countZeros;
+}

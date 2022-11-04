@@ -24,14 +24,17 @@
 #include "./lib/motors.h"
 #include "./lib/camera.h"
 
+#define CENTER_SHIFT 20
+#define THRESHOLD 12000
+
 extern  unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
 extern unsigned char OLED_GRAPH_ARR[1024];
 
 extern uint16_t line[128];
 extern BOOLEAN g_sendData;
-uint16_t binaryCameraData[128];
-static uint16_t threshold = 16300;
+extern uint16_t binaryCameraData[128];
+extern uint16_t finalCameraData[128];
 static char str[100];
 
 void main_delay(int del){
@@ -68,14 +71,12 @@ int main(void) {
     EnableInterrupts();
         
     while(1) {
-        //int i = 0;
-        //smoothCameraData();
-        /*
-        for(i = 0; i < 128; i++) {
-            binaryCameraData[i] = binarizeCameraData(line[i], threshold);
-        }*/
+        int i = 0;
+        smoothCameraData();
+        binarizeCameraData(THRESHOLD);
+        center_camera_data(CENTER_SHIFT);
         if(g_sendData == TRUE) {
-            OLED_DisplayCameraData(line);
+            OLED_DisplayCameraData(finalCameraData);
             g_sendData = FALSE;
         }
         

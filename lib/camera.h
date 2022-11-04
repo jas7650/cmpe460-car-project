@@ -16,4 +16,5 @@
 void INIT_Camera(void);
 uint16_t fivePointAverage(uint16_t a, uint16_t b, uint16_t c, uint16_t d, uint16_t e);
 void smoothCameraData(void);
-uint16_t binarizeCameraData(uint16_t lineVal, uint16_t threshold);
+void binarizeCameraData(uint16_t threshold);
+void center_camera_data(int shiftVal);
