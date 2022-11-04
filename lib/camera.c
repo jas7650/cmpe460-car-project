@@ -13,6 +13,9 @@
 
 extern uint16_t line[128];
 extern BOOLEAN g_sendData;
+extern double leftZerosPercent;
+extern double rightZerosPercent;
+
 uint16_t binaryCameraData[128];
 uint16_t finalCameraData[128];
 
@@ -20,6 +23,8 @@ uint16_t finalCameraData[128];
 uint16_t deltaR;
 uint16_t deltaL;
 uint16_t center;
+
+char string[100];
 
 void INIT_Camera(void) {
     g_sendData = FALSE;
@@ -61,7 +66,7 @@ void center_camera_data(int shiftVal) {
     }
 }
 
-int calc_delta_right(uint16_t line[]) {
+void calc_delta_right(uint16_t line[]) {
     int i;
     int countZeros = 0;
     for(i = 64; i < 128; i++) {
@@ -69,10 +74,10 @@ int calc_delta_right(uint16_t line[]) {
             countZeros++;
         }
     }
-    return countZeros;
+    rightZerosPercent = countZeros/64.0;
 }
 
-int calc_delta_left(uint16_t line[]) {
+void calc_delta_left(uint16_t line[]) {
     int i;
     int countZeros = 0;
     for(i = 0; i < 64; i++) {
@@ -80,5 +85,5 @@ int calc_delta_left(uint16_t line[]) {
             countZeros++;
         }
     }
-    return countZeros;
+    leftZerosPercent = countZeros/64.0;
 }

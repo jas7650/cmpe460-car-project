@@ -18,3 +18,5 @@ uint16_t fivePointAverage(uint16_t a, uint16_t b, uint16_t c, uint16_t d, uint16
 void smoothCameraData(void);
 void binarizeCameraData(uint16_t threshold);
 void center_camera_data(int shiftVal);
+int calc_delta_right(uint16_t line[]);
+int calc_delta_left(uint16_t line[]);
