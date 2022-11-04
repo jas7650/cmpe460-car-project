@@ -39,7 +39,7 @@ void smoothCameraData(void) {
 
 uint16_t binarizeCameraData(uint16_t lineVal, uint16_t threshold) {
     if(lineVal > threshold) {
-        return 1;
+        return 16383;
     } else {
         return 0;
     }
