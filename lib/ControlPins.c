@@ -68,7 +68,7 @@ void ControlPin_SI_Init()
     // so try 50Hz?
     // Go with 50Hz for now - integration period of 20ms
     //unsigned long period = CalcPeriodFromFrequency (1.0/(double)INTEGRATION_TIME);
-    unsigned long period = 360000;
+    unsigned long period = 48000000/(1.0/(double)INTEGRATION_TIME);
     // initialize P5.5 and make it output (P5.5 SI Pin)
     P5->SEL0 &= ~BIT5;
     P5->SEL1 &= ~BIT5;
