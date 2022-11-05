@@ -24,9 +24,8 @@
 #include "./lib/motors.h"
 #include "./lib/camera.h"
 
-#define CENTER_SHIFT 20
-#define THRESHOLD 12000
-#define TOLERANCE 10
+#define CENTER_SHIFT 0
+#define THRESHOLD 8000
 
 extern  unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
@@ -34,12 +33,13 @@ extern unsigned char OLED_GRAPH_ARR[1024];
 
 double leftZerosPercent;
 double rightZerosPercent;
+int leftZeros, rightZeros;
 
 extern uint16_t line[128];
 extern BOOLEAN g_sendData;
 extern uint16_t binaryCameraData[128];
 extern uint16_t finalCameraData[128];
-static char str[100];
+static char str[1024];
 
 void main_delay(int del){
     volatile int i;
@@ -78,29 +78,18 @@ int main(void) {
         int i = 0;
         smoothCameraData();
         binarizeCameraData(THRESHOLD);
-        center_camera_data(CENTER_SHIFT);
         if(g_sendData == TRUE) {
-            OLED_DisplayCameraData(finalCameraData);
+            OLED_DisplayCameraData(binaryCameraData);
             g_sendData = FALSE;
         }
-        calc_delta_left(finalCameraData);
-        calc_delta_right(finalCameraData);
-        //uart0_put("Left: ");
-        //sprintf(str, "%f\r\n", leftZerosPercent);
-        //uart0_put(str);
-        driveForward(0.25);
-        //if(leftZerosPercent + rightZerosPercent > 0.95) {
-            //stopWheels();
-        //}
-        if(leftZerosPercent > 0.5) {
-            turnRight();
+        leftZeros = calc_left_zeros(binaryCameraData);
+        rightZeros = calc_right_zeros(binaryCameraData);
+        if (!detect_carpet(binaryCameraData)) {
+            driveForward(0.275);
+        } else {
+            driveForward(0);
         }
-        else if(rightZerosPercent > 0.5) {
-            turnLeft();
-        }
-        else {
-            centerWheels();
-        }
+        moveWheels(leftZeros, rightZeros);
     }
 }
 

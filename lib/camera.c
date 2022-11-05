@@ -10,6 +10,7 @@
 #include "ADC14.h"
 #include "ControlPins.h"
 #include "SysTickTimer.h"
+#include "camera.h"
 
 extern uint16_t line[128];
 extern BOOLEAN g_sendData;
@@ -86,4 +87,41 @@ void calc_delta_left(uint16_t line[]) {
         }
     }
     leftZerosPercent = countZeros/64.0;
+}
+
+int calc_right_zeros(uint16_t line[]) {
+    int i;
+    int rightZeros = 0;
+    for(i = 64; i < 128-TOLERANCE; i++) {
+        if(line[i] == 0) {
+            rightZeros++;
+        }
+    }
+    return rightZeros;
+}
+
+int calc_left_zeros(uint16_t line[]) {
+    int i;
+    int leftZeros = 0;
+    for(i = TOLERANCE; i < 64; i++) {
+        if(line[i] == 0) {
+            leftZeros++;
+        }
+    }
+    return leftZeros;
+}
+
+BOOLEAN detect_carpet(uint16_t line[]) {
+    int i;
+    int countZeros = 0;
+    for(i = 32; i < 97; i++) {
+        if(line[i] == 0) {
+            countZeros++;
+        }
+    }
+    if (countZeros > 64) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
 }

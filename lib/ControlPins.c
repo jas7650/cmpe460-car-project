@@ -14,7 +14,7 @@ extern uint32_t SystemCoreClock;
 
 // default SI integration time is 7.5ms = 133Hz
 //
-#define INTEGRATION_TIME .001f
+#define INTEGRATION_TIME .0013f
 #define SIMULATED_CAMERA_CLOCK_FREQ 48000000
 
 // default CLK frequency of the camera 180KHz (assume 48MHz clock)

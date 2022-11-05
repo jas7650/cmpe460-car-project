@@ -13,10 +13,15 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define TOLERANCE 10
+
 void INIT_Camera(void);
 uint16_t fivePointAverage(uint16_t a, uint16_t b, uint16_t c, uint16_t d, uint16_t e);
 void smoothCameraData(void);
 void binarizeCameraData(uint16_t threshold);
 void center_camera_data(int shiftVal);
-int calc_delta_right(uint16_t line[]);
-int calc_delta_left(uint16_t line[]);
+void calc_delta_right(uint16_t line[]);
+void calc_delta_left(uint16_t line[]);
+int calc_right_zeros(uint16_t line[]);
+int calc_left_zeros(uint16_t line[]);
+BOOLEAN detect_carpet(uint16_t line[]);

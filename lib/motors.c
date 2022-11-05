@@ -1,10 +1,13 @@
 #include "msp.h"
 #include "uart.h"
 #include "motors.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 // Make these arrays 5 deep, since we are using indexes 1-4 for the pins
 static uint32_t DEFAULT_PERIOD_A0[5] = {0,0,0,0,0};
 static uint32_t DEFAULT_PERIOD_A2[5] = {0,0,0,0,0};
+char buffer[1024];
 
 //***************************PWM_Init*******************************
 // PWM output on P2.4, P2.5, P2.6, P2.7
@@ -113,19 +116,19 @@ int TIMER_A2_PWM_Init(uint16_t period, double percentDutyCycle, uint16_t pin)
     // TIMER_A0->CCR[0]
     TIMER_A2->CCR[0] = period;
     // TIMER_A0->CCTL[pin]
-      TIMER_A2->CCTL[0] |= BIT(7);
+    TIMER_A2->CCTL[0] |= BIT(7);
     TIMER_A2->CCTL[pin] |= BIT(6);
     // set the duty cycle
     dutyCycle = (uint16_t) (percentDutyCycle * (double)DEFAULT_PERIOD_A2[pin]);
 
     // CCR[n] contains the dutyCycle just calculated, where n is the pin number
     //TIMER_A0->CCR[pin]
-      TIMER_A2->CCR[pin] = dutyCycle;
+    TIMER_A2->CCR[pin] = dutyCycle;
     
     // Timer CONTROL register
     // TIMER_A0->CTL
     TIMER_A2->CTL = 0x0230;
-      // You will have to use the prescaler (clock divider) to get down to 20ms
+    // You will have to use the prescaler (clock divider) to get down to 20ms
     TIMER_A2->CTL |= BIT(7);
     TIMER_A2->CTL |= BIT(6);
     
@@ -183,4 +186,27 @@ void turnHalfRight() {
 
 void centerWheels() {
     TIMER_A2_PWM_DutyCycle(SERVO_CENTER, 1);
+}
+
+void moveWheels(int left, int right) {
+    int difference = left-right;
+    double SCALING_FACTOR = 21.6;
+    double adjustment = ((double)(-1.0*difference)/SCALING_FACTOR);
+    double dutyCycle = ((double)7.5+adjustment)/100.0;
+    
+    if (difference < 0) {
+        if (difference > -54) {
+            TIMER_A2_PWM_DutyCycle(dutyCycle, 1);
+        } else {
+            turnLeft();
+        }
+    } else if (difference > 0) {
+        if (difference < 54) {
+            TIMER_A2_PWM_DutyCycle(dutyCycle, 1);
+        } else {
+            turnRight();
+        }
+    } else {
+        centerWheels();
+    }
 }
