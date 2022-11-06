@@ -24,22 +24,21 @@
 #include "./lib/motors.h"
 #include "./lib/camera.h"
 
-#define CENTER_SHIFT 0
-#define THRESHOLD 8000
-
 extern  unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
 extern unsigned char OLED_GRAPH_ARR[1024];
 
-double leftZerosPercent;
-double rightZerosPercent;
-int leftZeros, rightZeros;
+int leftEdge[3], rightEdge[3];
 double percentDutyCycle = SERVO_CENTER;
+int differenceChange;
 
-extern uint16_t line[128];
+extern uint16_t line_1[128];
+extern uint16_t line_2[128];
+extern uint16_t line_3[128];
 extern BOOLEAN g_sendData;
 extern uint16_t binaryCameraData[128];
 extern uint16_t finalCameraData[128];
+extern uint16_t edgeCameraData[128];
 static char str[1024];
 
 void main_delay(int del){
@@ -77,20 +76,29 @@ int main(void) {
     EnableInterrupts();  
     while(1) {
         int i = 0;
-        smoothCameraData();
-        binarizeCameraData(THRESHOLD);
+        //smoothCameraData();
+        //binarizeCameraData(THRESHOLD);
+        leftEdge[2] = leftEdge[1];
+        leftEdge[1] = leftEdge[0];
+        leftEdge[0] = calc_left_edge(line_1);
+        
+        rightEdge[2] = rightEdge[1];
+        rightEdge[1] = rightEdge[0];
+        rightEdge[0] = calc_right_edge(line_1);
+        
+        setEdgesHigh(leftEdge, rightEdge, line_1);
+        
         if(g_sendData == TRUE) {
-            OLED_DisplayCameraData(binaryCameraData);
+            OLED_DisplayCameraData(edgeCameraData);
             g_sendData = FALSE;
         }
-        leftZeros = calc_left_zeros(binaryCameraData);
-        rightZeros = calc_right_zeros(binaryCameraData);
-        if (!detect_carpet(binaryCameraData)) {
-            driveForward(0.275);
-        } else {
-            driveForward(0);
-        }
-        percentDutyCycle = moveWheels(leftZeros, rightZeros, percentDutyCycle);
+        
+//        if (!detect_carpet(line_1)) {
+//            driveForward(0.275);
+//        } else {
+//            driveForward(0);
+//        }
+        percentDutyCycle = moveWheels(leftEdge, rightEdge, percentDutyCycle);
     }
 }
 

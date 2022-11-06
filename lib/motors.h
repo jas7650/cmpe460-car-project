@@ -13,14 +13,14 @@
 #define SERVO_1_4_LEFT 8.125/100.0
 #define SERVO_3_4_LEFT 9.375/100.0
 
-#define SERVO_1_LEFT -0.625
-#define SERVO_2_LEFT -1.25
-#define SERVO_3_LEFT -1.875
+#define SERVO_1_LEFT -0.25
+#define SERVO_2_LEFT -0.75
+#define SERVO_3_LEFT -1.5
 #define SERVO_4_LEFT -2.5
 
-#define SERVO_1_RIGHT 0.625
-#define SERVO_2_RIGHT 1.25
-#define SERVO_3_RIGHT 1.875
+#define SERVO_1_RIGHT 0.25
+#define SERVO_2_RIGHT 0.75
+#define SERVO_3_RIGHT 1.5
 #define SERVO_4_RIGHT 2.5
 
 void initDCMotors(void);
@@ -36,4 +36,4 @@ int TIMER_A0_PWM_Init(uint16_t period, double percentDutyCycle, uint16_t pin);
 void TIMER_A2_PWM_DutyCycle(double percentDutyCycle, uint16_t pin);
 int TIMER_A2_PWM_Init(uint16_t period, double percentDutyCycle, uint16_t pin);
 void TIMER_A2_PWM_DutyCycle(double percentDutyCycle, uint16_t pin);
-double moveWheels(int left, int right, double dutyCycle);
+double moveWheels(int left[], int right[], double dutyCycle);

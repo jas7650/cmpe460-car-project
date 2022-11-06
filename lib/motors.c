@@ -207,35 +207,49 @@ void centerWheels() {
 }
 
 double safeDutyCycle(double dutyCycle) {
-    if (dutyCycle < 5.0)
+    if (dutyCycle < 5.0) {
         return 5.0;
-    if (dutyCycle > 10.0)
+    } else if (dutyCycle > 10.0) {
         return 10.0;
-    return dutyCycle;
+    } else {
+        return dutyCycle;
+    }
 }
 
-double moveWheels(int left, int right, double dutyCycle) {
+double getChange(int difference[]) {
+    int change1, change2;
+    change1 = difference[1]-difference[0];
+    change2 = difference[2]-difference[1];
+    return (change1 + change2)/2.0;
+}
+
+double moveWheels(int left[], int right[], double dutyCycle) {
     //if right has more zeros, value will be positive and therefore need to adjust right
-    int difference = right-left;
+    int difference[3];
+    double change;
+    difference[0] = right[0]-left[0];
+    difference[1] = right[1]-left[1];
+    difference[2] = right[2]-left[2];
+    change = getChange(difference);
     
-    if (difference < 3) {               //Need to adjust to the left
-        if (difference > -30)
-            dutyCycle += SERVO_4_LEFT;
-        else if (difference > -20)
-            dutyCycle += SERVO_3_LEFT;
-        else if (difference > -10)
-            dutyCycle += SERVO_2_LEFT;
-        else
-            dutyCycle += SERVO_1_LEFT;
-    } else if (difference > 3) {        //Need to adjust to the right
-        if (difference > 30)
+    if (change < 3.0) {               //Need to adjust to the left
+        if (change > -30.0)
             dutyCycle += SERVO_4_RIGHT;
-        else if (difference > 20)
+        else if (change > -20.0)
             dutyCycle += SERVO_3_RIGHT;
-        else if (difference > 10)
+        else if (change > -10.0)
             dutyCycle += SERVO_2_RIGHT;
         else
             dutyCycle += SERVO_1_RIGHT;
+    } else if (change > 3.0) {        //Need to adjust to the right
+        if (change > 30.0)
+            dutyCycle += SERVO_4_LEFT;
+        else if (change > 20.0)
+            dutyCycle += SERVO_3_LEFT;
+        else if (change > 10.0)
+            dutyCycle += SERVO_2_LEFT;
+        else
+            dutyCycle += SERVO_1_LEFT;
     } else {                            //Continue as is
         dutyCycle = dutyCycle;
     }

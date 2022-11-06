@@ -9,6 +9,7 @@
 #include "uart.h"
 #include "led.h"
 #include "oled.h"
+#include "camera.h"
 
 extern uint32_t SystemCoreClock;
 
@@ -31,7 +32,7 @@ extern uint32_t SystemCoreClock;
 unsigned long tempCounter = 0;
 static long pixelCounter = 0;
 
-uint16_t line[128];
+uint16_t line_1[128];
 BOOLEAN g_sendData;
 char str[128];
 
@@ -126,7 +127,17 @@ void CLK_Handler(void)
         // read data from ADC
         ADC_val = ADC_In();
         // save into the line buffer
-        line[pixelCounter] = ADC_val;
+        if (pixelCounter < TOLERANCE) {
+            line_1[pixelCounter] = OUT_OF_RANGE;
+        } else if (128 - pixelCounter < TOLERANCE) {
+            line_1[pixelCounter] = OUT_OF_RANGE;
+        } else {
+            if (ADC_val < THRESHOLD) {
+                line_1[pixelCounter] = LOW;
+            } else {
+                line_1[pixelCounter] = HIGH;
+            }
+        }
         // increment the pixelCounter
         pixelCounter = (pixelCounter + 1);
         //are we done??
