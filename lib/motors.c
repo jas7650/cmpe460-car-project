@@ -1,13 +1,21 @@
 #include "msp.h"
 #include "uart.h"
 #include "motors.h"
+#include "camera.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+
+#define TURNING_LEFT 0
+#define TURNING_RIGHT 1
+#define DRIVING_STRAIGHT 2
+
 
 // Make these arrays 5 deep, since we are using indexes 1-4 for the pins
 static uint32_t DEFAULT_PERIOD_A0[5] = {0,0,0,0,0};
 static uint32_t DEFAULT_PERIOD_A2[5] = {0,0,0,0,0};
 char buffer[1024];
+int turning;
 
 //***************************PWM_Init*******************************
 // PWM output on P2.4, P2.5, P2.6, P2.7
@@ -168,12 +176,22 @@ void stopWheels() {
     TIMER_A0_PWM_DutyCycle(0.0, 4);
 }
 
+int updateTurning(double dutyCycle) {
+    if (dutyCycle < 6.5) {
+        return TURNING_RIGHT;
+    } else if (dutyCycle > 8.5) {
+        return TURNING_LEFT;
+    } else {
+        return DRIVING_STRAIGHT;
+    }
+}
+
 void turnLeft() {
     TIMER_A2_PWM_DutyCycle(SERVO_LEFT, 1);
 }
 
 void turnHalfLeft() {
-    TIMER_A2_PWM_DutyCycle(SERVO_HALF_LEFT, 1);
+    TIMER_A2_PWM_DutyCycle(SERVO_1_2_LEFT, 1);
 }
 
 void turnRight() {
@@ -181,32 +199,109 @@ void turnRight() {
 }
 
 void turnHalfRight() {
-    TIMER_A2_PWM_DutyCycle(SERVO_HALF_RIGHT, 1);
+    TIMER_A2_PWM_DutyCycle(SERVO_1_2_RIGHT, 1);
 }
 
 void centerWheels() {
     TIMER_A2_PWM_DutyCycle(SERVO_CENTER, 1);
 }
 
-void moveWheels(int left, int right) {
-    int difference = left-right;
-    double SCALING_FACTOR = 21.6;
-    double adjustment = ((double)(-1.0*difference)/SCALING_FACTOR);
-    double dutyCycle = ((double)7.5+adjustment)/100.0;
+double safeDutyCycle(double dutyCycle) {
+    if (dutyCycle < 5.0)
+        return 5.0;
+    if (dutyCycle > 10.0)
+        return 10.0;
+    return dutyCycle;
+}
+
+double moveWheels(int left, int right, double dutyCycle) {
+    //if right has more zeros, value will be positive and therefore need to adjust right
+    int difference = right-left;
     
-    if (difference < 0) {
-        if (difference > -54) {
-            TIMER_A2_PWM_DutyCycle(dutyCycle, 1);
-        } else {
-            turnLeft();
-        }
-    } else if (difference > 0) {
-        if (difference < 54) {
-            TIMER_A2_PWM_DutyCycle(dutyCycle, 1);
-        } else {
-            turnRight();
-        }
-    } else {
-        centerWheels();
+    if (difference < 3) {               //Need to adjust to the left
+        if (difference > -30)
+            dutyCycle += SERVO_4_LEFT;
+        else if (difference > -20)
+            dutyCycle += SERVO_3_LEFT;
+        else if (difference > -10)
+            dutyCycle += SERVO_2_LEFT;
+        else
+            dutyCycle += SERVO_1_LEFT;
+    } else if (difference > 3) {        //Need to adjust to the right
+        if (difference > 30)
+            dutyCycle += SERVO_4_RIGHT;
+        else if (difference > 20)
+            dutyCycle += SERVO_3_RIGHT;
+        else if (difference > 10)
+            dutyCycle += SERVO_2_RIGHT;
+        else
+            dutyCycle += SERVO_1_RIGHT;
+    } else {                            //Continue as is
+        dutyCycle = dutyCycle;
     }
+    
+    dutyCycle = safeDutyCycle(dutyCycle);
+    TIMER_A2_PWM_DutyCycle(dutyCycle/100.0, 1);
+    return dutyCycle;
+
+//    if (turning == TURNING_LEFT) {             //Turning left
+//        if (difference == 0) {                 //No adjustment needed
+//            dutyCycle = dutyCycle;
+//        } else if (difference < 0) {           //Adjust to the left
+//            if (difference > -10) {
+//                
+//            } else if (difference > -20) {
+//                
+//            } else if (difference > -30) {
+//                
+//            } else {
+//                
+//            }
+//        } else {                               //Adjust to the right
+//            if (difference < 10) {
+//                
+//            } else if (difference < 20) {
+//                
+//            } else if (difference < 30) {
+//                
+//            } else {
+//                
+//            }
+//        }
+//    } else if (turning == TURNING_RIGHT) {     //Turning Right
+//        if (difference == 0) {                 //No adjustment needed
+//            dutyCycle = SERVO_CENTER;
+//        }
+//        else if (difference < 0) {             //Adjust to the left
+//            if (difference > -10) {
+//                
+//            } else if (difference > -20) {
+//                
+//            } else if (difference > -30) {
+//                
+//            } else {
+//                
+//            }
+//        } else {                               //Adjust to the right
+//            if (difference < 10) {
+//                
+//            } else if (difference < 20) {
+//                
+//            } else if (difference < 30) {
+//                
+//            } else {
+//                
+//            }
+//        }
+//    } else {                                    //Driving straight
+//        if (difference == 0) {
+//            dutyCycle = SERVO_CENTER;
+//        }
+//        else if (difference < 0) {
+//            
+//        } else {
+//            
+//        }
+//    }
+//    turning = updateTurning(dutyCycle);
 }

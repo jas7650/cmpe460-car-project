@@ -34,6 +34,7 @@ extern unsigned char OLED_GRAPH_ARR[1024];
 double leftZerosPercent;
 double rightZerosPercent;
 int leftZeros, rightZeros;
+double percentDutyCycle = SERVO_CENTER;
 
 extern uint16_t line[128];
 extern BOOLEAN g_sendData;
@@ -89,7 +90,7 @@ int main(void) {
         } else {
             driveForward(0);
         }
-        moveWheels(leftZeros, rightZeros);
+        percentDutyCycle = moveWheels(leftZeros, rightZeros, percentDutyCycle);
     }
 }
 
