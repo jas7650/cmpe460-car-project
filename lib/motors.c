@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "led.h"
 
 #define TURNING_LEFT 0
 #define TURNING_RIGHT 1
@@ -176,16 +177,6 @@ void stopWheels() {
     TIMER_A0_PWM_DutyCycle(0.0, 4);
 }
 
-int updateTurning(double dutyCycle) {
-    if (dutyCycle < 6.5) {
-        return TURNING_RIGHT;
-    } else if (dutyCycle > 8.5) {
-        return TURNING_LEFT;
-    } else {
-        return DRIVING_STRAIGHT;
-    }
-}
-
 void turnLeft() {
     TIMER_A2_PWM_DutyCycle(SERVO_LEFT, 1);
 }
@@ -216,106 +207,24 @@ double safeDutyCycle(double dutyCycle) {
     }
 }
 
-double getChange(int difference[]) {
-    int change1, change2;
-    change1 = difference[1]-difference[0];
-    change2 = difference[2]-difference[1];
-    return (change1 + change2)/2.0;
+int getChange(int distance[]) {
+    return distance[1] - distance[0];
 }
 
-double moveWheels(int left[], int right[], double dutyCycle) {
-    //if right has more zeros, value will be positive and therefore need to adjust right
-    int difference[3];
+double moveWheels(int position, double dutyCycle) {
+    int error;
+    int multiplier;
     double change;
-    difference[0] = right[0]-left[0];
-    difference[1] = right[1]-left[1];
-    difference[2] = right[2]-left[2];
-    change = getChange(difference);
+    double sensitivity = 50.0;
+    double kp = 1/10;
     
-    if (change < 3.0) {               //Need to adjust to the left
-        if (change > -30.0)
-            dutyCycle += SERVO_4_RIGHT;
-        else if (change > -20.0)
-            dutyCycle += SERVO_3_RIGHT;
-        else if (change > -10.0)
-            dutyCycle += SERVO_2_RIGHT;
-        else
-            dutyCycle += SERVO_1_RIGHT;
-    } else if (change > 3.0) {        //Need to adjust to the right
-        if (change > 30.0)
-            dutyCycle += SERVO_4_LEFT;
-        else if (change > 20.0)
-            dutyCycle += SERVO_3_LEFT;
-        else if (change > 10.0)
-            dutyCycle += SERVO_2_LEFT;
-        else
-            dutyCycle += SERVO_1_LEFT;
-    } else {                            //Continue as is
-        dutyCycle = dutyCycle;
-    }
+    error = position-64;
+    
+    dutyCycle = error*kp;
     
     dutyCycle = safeDutyCycle(dutyCycle);
     TIMER_A2_PWM_DutyCycle(dutyCycle/100.0, 1);
+    
     return dutyCycle;
-
-//    if (turning == TURNING_LEFT) {             //Turning left
-//        if (difference == 0) {                 //No adjustment needed
-//            dutyCycle = dutyCycle;
-//        } else if (difference < 0) {           //Adjust to the left
-//            if (difference > -10) {
-//                
-//            } else if (difference > -20) {
-//                
-//            } else if (difference > -30) {
-//                
-//            } else {
-//                
-//            }
-//        } else {                               //Adjust to the right
-//            if (difference < 10) {
-//                
-//            } else if (difference < 20) {
-//                
-//            } else if (difference < 30) {
-//                
-//            } else {
-//                
-//            }
-//        }
-//    } else if (turning == TURNING_RIGHT) {     //Turning Right
-//        if (difference == 0) {                 //No adjustment needed
-//            dutyCycle = SERVO_CENTER;
-//        }
-//        else if (difference < 0) {             //Adjust to the left
-//            if (difference > -10) {
-//                
-//            } else if (difference > -20) {
-//                
-//            } else if (difference > -30) {
-//                
-//            } else {
-//                
-//            }
-//        } else {                               //Adjust to the right
-//            if (difference < 10) {
-//                
-//            } else if (difference < 20) {
-//                
-//            } else if (difference < 30) {
-//                
-//            } else {
-//                
-//            }
-//        }
-//    } else {                                    //Driving straight
-//        if (difference == 0) {
-//            dutyCycle = SERVO_CENTER;
-//        }
-//        else if (difference < 0) {
-//            
-//        } else {
-//            
-//        }
-//    }
-//    turning = updateTurning(dutyCycle);
+    
 }

@@ -15,7 +15,7 @@ extern uint32_t SystemCoreClock;
 
 // default SI integration time is 7.5ms = 133Hz
 //
-#define INTEGRATION_TIME .0013f
+#define INTEGRATION_TIME .0014f
 #define SIMULATED_CAMERA_CLOCK_FREQ 48000000
 
 // default CLK frequency of the camera 180KHz (assume 48MHz clock)
@@ -126,6 +126,7 @@ void CLK_Handler(void)
     {
         // read data from ADC
         ADC_val = ADC_In();
+        //line_1[pixelCounter] = ADC_val;
         // save into the line buffer
         if (pixelCounter < TOLERANCE) {
             line_1[pixelCounter] = OUT_OF_RANGE;

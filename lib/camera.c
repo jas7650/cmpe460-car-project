@@ -11,6 +11,7 @@
 #include "ControlPins.h"
 #include "SysTickTimer.h"
 #include "camera.h"
+#include "oled.h"
 
 extern BOOLEAN g_sendData;
 extern double leftZerosPercent;
@@ -38,12 +39,12 @@ uint16_t fivePointAverage(uint16_t a, uint16_t b, uint16_t c, uint16_t d, uint16
     return (a + b + c + d + e)/5;
 }
 
-void smoothCameraData(uint16_t line[]) {
-    int i;
-    for(i = 2; i < 126; i++) {
-        line[i] = fivePointAverage(line[i-2], line[i-1], line[i], line[i+1], line[i+2]);
-    }
-}
+//void smoothCameraData(uint16_t line[]) {
+//    int i;
+//    for(i = 2; i < 126; i++) {
+//        smoothData[i] = fivePointAverage(line[i-2], line[i-1], line[i], line[i+1], line[i+2]);
+//    }
+//}
 
 void binarizeCameraData(uint16_t line[], uint16_t threshold) {
     int i;
@@ -56,38 +57,58 @@ void binarizeCameraData(uint16_t line[], uint16_t threshold) {
     }
 }
 
-void setEdgesHigh(int leftEdge[], int rightEdge[], uint16_t line[]) {
-    edgeCameraData[leftEdge[1]] = 0;
-    edgeCameraData[leftEdge[2]] = 0;
-    edgeCameraData[rightEdge[1]] = 0;
-    edgeCameraData[rightEdge[2]] = 0;
+void setEdgesHigh(int leftEdge[], int rightEdge[]) {
+    int i;
+    edgeCameraData[leftEdge[1]] = LOW;
+    edgeCameraData[leftEdge[2]] = LOW;
+    edgeCameraData[rightEdge[1]] = LOW;
+    edgeCameraData[rightEdge[2]] = LOW;
     
     if (leftEdge[0] != -1) {
-        edgeCameraData[leftEdge[0]] = 16383;
+        edgeCameraData[leftEdge[0]] = HIGH;
     }
     if (rightEdge[0] != -1) {
-        edgeCameraData[rightEdge[0]] = 16383;
+        edgeCameraData[rightEdge[0]] = HIGH;
+    }
+    for (i = TOLERANCE; i > -1; i--) {
+        edgeCameraData[i] = OUT_OF_RANGE;
+    }
+    for (i = 128-TOLERANCE; i < 128; i++) {
+        edgeCameraData[i] = OUT_OF_RANGE;
     }
 }
 
-int calc_right_edge(uint16_t line[]) {
+int getLeftEdge(uint16_t line[]) {
     int i;
-    for(i = 128-TOLERANCE; i > 0; i--) {
-        if(line[i+1] == LOW && line[i] == HIGH && line[i-1] == HIGH) {
+    led2_on(BLUE);
+    for (i = TOLERANCE; i < 128; i++) {
+        if (line[i]-line[i-1] == LEFT_EDGE) {
             return i;
         }
     }
     return -1;
 }
 
-int calc_left_edge(uint16_t line[]) {
+int getRightEdge(uint16_t line[]) {
     int i;
-    for(i = TOLERANCE; i < 128; i++) {
-        if(line[i-1] == LOW && line[i] == HIGH && line[i+1] == HIGH) {
+    led2_on(GREEN);
+    for (i = 128-TOLERANCE; i > -1; i--) {
+        if (line[i]-line[i-1] == RIGHT_EDGE) {
             return i;
         }
     }
     return -1;
+}
+
+int calculatePosition(int leftEdge, int rightEdge) {
+    int position = -1;
+    if (leftEdge != -1) {
+        position = 64-leftEdge+TOLERANCE;
+    } else if (rightEdge != -1) {
+        led2_on(BLUE);
+        position = 128-(rightEdge-64)-TOLERANCE;
+    }
+    return position;
 }
 
 BOOLEAN detect_carpet(uint16_t line[]) {
