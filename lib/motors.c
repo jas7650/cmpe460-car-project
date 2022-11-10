@@ -157,7 +157,7 @@ void TIMER_A2_PWM_DutyCycle(double percentDutyCycle, uint16_t pin)
     TIMER_A2->CCR[pin] = (uint16_t) (percentDutyCycle * (double)DEFAULT_PERIOD_A2[pin]);
 }
 
-void initServoMotor() {
+void initServoMotor(void) {
     TIMER_A2_PWM_Init(((SystemCoreClock/8)/50)/2, SERVO_CENTER, 1);
 }
 
@@ -169,7 +169,7 @@ void driveForward(double dutyCycle) {
     TIMER_A0_PWM_DutyCycle(0, 4);
 }
 
-void stopWheels() {
+void stopWheels(void) {
     TIMER_A0_PWM_DutyCycle(0.0, 1);
     TIMER_A0_PWM_DutyCycle(0.0, 2);
     
@@ -177,54 +177,34 @@ void stopWheels() {
     TIMER_A0_PWM_DutyCycle(0.0, 4);
 }
 
-void turnLeft() {
+void turnLeft(void) {
     TIMER_A2_PWM_DutyCycle(SERVO_LEFT, 1);
 }
 
-void turnHalfLeft() {
-    TIMER_A2_PWM_DutyCycle(SERVO_1_2_LEFT, 1);
-}
-
-void turnRight() {
+void turnRight(void) {
     TIMER_A2_PWM_DutyCycle(SERVO_RIGHT, 1);
 }
 
-void turnHalfRight() {
-    TIMER_A2_PWM_DutyCycle(SERVO_1_2_RIGHT, 1);
-}
-
-void centerWheels() {
+void centerWheels(void) {
     TIMER_A2_PWM_DutyCycle(SERVO_CENTER, 1);
 }
 
 double safeDutyCycle(double dutyCycle) {
-    if (dutyCycle < 5.0) {
-        return 5.0;
-    } else if (dutyCycle > 10.0) {
-        return 10.0;
+    if (dutyCycle < SERVO_RIGHT) {
+        return SERVO_RIGHT;
+    } else if (dutyCycle > SERVO_LEFT) {
+        return SERVO_LEFT;
     } else {
         return dutyCycle;
     }
 }
 
-int getChange(int distance[]) {
-    return distance[1] - distance[0];
-}
-
-double moveWheels(int position, double dutyCycle) {
-    int error;
-    int multiplier;
-    double change;
-    double sensitivity = 50.0;
-    double kp = 1/10;
-    
-    error = position-64;
-    
-    dutyCycle = error*kp;
-    
+void turnWheels(double angle) {
+    //take range from -60 to 60
+    //60 -> far left +2.5
+    //-60 -> far right -2.5
+    //0 -> center
+    double dutyCycle = (angle/60.0)*2.5+SERVO_CENTER;
     dutyCycle = safeDutyCycle(dutyCycle);
     TIMER_A2_PWM_DutyCycle(dutyCycle/100.0, 1);
-    
-    return dutyCycle;
-    
 }

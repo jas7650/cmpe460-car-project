@@ -22,14 +22,17 @@
 #define RIGHT_EDGE -16383
 #define FAR_LEFT TOLERANCE
 #define FAR_RIGHT 128-TOLERANCE
-#define CENTER 64
+#define OFFSET -4
+#define CENTER 64-OFFSET
 
 void INIT_Camera(void);
 uint16_t fivePointAverage(uint16_t a, uint16_t b, uint16_t c, uint16_t d, uint16_t e);
-void smoothCameraData(uint16_t line[]);
-void binarizeCameraData(uint16_t line[], uint16_t threshold);
-BOOLEAN detect_carpet(uint16_t line[]);
+void smoothCameraData(void);
+void binarizeCameraData(uint16_t threshold);
+BOOLEAN detect_carpet(void);
 void setEdgesHigh(int leftEdge[], int rightEdge[]);
-int getLeftEdge(uint16_t edge_data[]);
-int getRightEdge(uint16_t edge_data[]);
+int getLeftEdge(void);
+int getRightEdge(void);
 int calculatePosition(int leftEdge, int rightEdge);
+double calcCenterMass(void);
+void updateCenterData(double center, double prevCenter);

@@ -12,19 +12,22 @@
 #include "SysTickTimer.h"
 #include "camera.h"
 #include "oled.h"
+#include <math.h>
+#include "motors.h"
 
 extern BOOLEAN g_sendData;
 extern double leftZerosPercent;
 extern double rightZerosPercent;
 
-uint16_t binaryCameraData[128];
-uint16_t finalCameraData[128];
-uint16_t edgeCameraData[128];
+extern uint16_t line_data[128];
+uint16_t binary_data[128];
+uint16_t smooth_data[128];
+uint16_t edge_data[128];
+uint16_t center_data[128];
 
 //static char str[100];
 uint16_t deltaR;
 uint16_t deltaL;
-uint16_t center;
 
 char string[100];
 
@@ -39,61 +42,83 @@ uint16_t fivePointAverage(uint16_t a, uint16_t b, uint16_t c, uint16_t d, uint16
     return (a + b + c + d + e)/5;
 }
 
-//void smoothCameraData(uint16_t line[]) {
-//    int i;
-//    for(i = 2; i < 126; i++) {
-//        smoothData[i] = fivePointAverage(line[i-2], line[i-1], line[i], line[i+1], line[i+2]);
-//    }
-//}
+void smoothCameraData() {
+    int i;
+    for(i = 2; i < 126; i++) {
+        smooth_data[i] = fivePointAverage(line_data[i-2], line_data[i-1], line_data[i], line_data[i+1], line_data[i+2]);
+    }
+}
 
-void binarizeCameraData(uint16_t line[], uint16_t threshold) {
+void binarizeCameraData(uint16_t threshold) {
     int i;
     for(i = 0; i < 128; i++) {
-        if(line[i] > threshold) {
-            binaryCameraData[i] = 16383;
+        if(smooth_data[i] > threshold) {
+            binary_data[i] = 16383;
         } else {
-            binaryCameraData[i] = 0;
+            binary_data[i] = 0;
         }
     }
 }
 
+double calcCenterMass(void) {
+    int x = 0;
+    int y = 0;
+    int i;
+    double d_center;
+    for (i = TOLERANCE; i < 128-TOLERANCE; i++) {
+        x += binary_data[i];
+        y += (i+OFFSET)*binary_data[i];
+    }
+    d_center = ((double)y/(double)x);
+    d_center = -1*(((d_center/(128-(2*TOLERANCE)))*120)-TOLERANCE-60);
+    if (abs((int)(d_center+0.5)) < 4) {
+        return 0;
+    }
+    return d_center;
+}
+
+void updateCenterData(double center_d, double prevCenter_d) {
+    center_data[(int)floor(prevCenter_d)] = LOW;
+    center_data[(int)floor(center_d)] = HIGH;
+}
+
 void setEdgesHigh(int leftEdge[], int rightEdge[]) {
     int i;
-    edgeCameraData[leftEdge[1]] = LOW;
-    edgeCameraData[leftEdge[2]] = LOW;
-    edgeCameraData[rightEdge[1]] = LOW;
-    edgeCameraData[rightEdge[2]] = LOW;
+    edge_data[leftEdge[1]] = LOW;
+    edge_data[leftEdge[2]] = LOW;
+    edge_data[rightEdge[1]] = LOW;
+    edge_data[rightEdge[2]] = LOW;
     
     if (leftEdge[0] != -1) {
-        edgeCameraData[leftEdge[0]] = HIGH;
+        edge_data[leftEdge[0]] = HIGH;
     }
     if (rightEdge[0] != -1) {
-        edgeCameraData[rightEdge[0]] = HIGH;
+        edge_data[rightEdge[0]] = HIGH;
     }
     for (i = TOLERANCE; i > -1; i--) {
-        edgeCameraData[i] = OUT_OF_RANGE;
+        edge_data[i] = OUT_OF_RANGE;
     }
     for (i = 128-TOLERANCE; i < 128; i++) {
-        edgeCameraData[i] = OUT_OF_RANGE;
+        edge_data[i] = OUT_OF_RANGE;
     }
 }
 
-int getLeftEdge(uint16_t line[]) {
+int getLeftEdge(void) {
     int i;
     led2_on(BLUE);
     for (i = TOLERANCE; i < 128; i++) {
-        if (line[i]-line[i-1] == LEFT_EDGE) {
+        if (binary_data[i]-binary_data[i-1] == LEFT_EDGE) {
             return i;
         }
     }
     return -1;
 }
 
-int getRightEdge(uint16_t line[]) {
+int getRightEdge(void) {
     int i;
     led2_on(GREEN);
     for (i = 128-TOLERANCE; i > -1; i--) {
-        if (line[i]-line[i-1] == RIGHT_EDGE) {
+        if (binary_data[i]-binary_data[i-1] == RIGHT_EDGE) {
             return i;
         }
     }
@@ -111,11 +136,11 @@ int calculatePosition(int leftEdge, int rightEdge) {
     return position;
 }
 
-BOOLEAN detect_carpet(uint16_t line[]) {
+BOOLEAN detect_carpet(void) {
     int i;
     int countZeros = 0;
     for(i = 32; i < 97; i++) {
-        if(line[i] == 0) {
+        if(binary_data[i] == 0) {
             countZeros++;
         }
     }

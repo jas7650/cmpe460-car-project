@@ -15,7 +15,7 @@ extern uint32_t SystemCoreClock;
 
 // default SI integration time is 7.5ms = 133Hz
 //
-#define INTEGRATION_TIME .0014f
+#define INTEGRATION_TIME .012f
 #define SIMULATED_CAMERA_CLOCK_FREQ 48000000
 
 // default CLK frequency of the camera 180KHz (assume 48MHz clock)
@@ -32,7 +32,7 @@ extern uint32_t SystemCoreClock;
 unsigned long tempCounter = 0;
 static long pixelCounter = 0;
 
-uint16_t line_1[128];
+uint16_t line_data[128];
 BOOLEAN g_sendData;
 char str[128];
 
@@ -72,8 +72,8 @@ void ControlPin_SI_Init()
     // frequency of 133 Hz works OK, but could use more light
     // so try 50Hz?
     // Go with 50Hz for now - integration period of 20ms
-    //unsigned long period = CalcPeriodFromFrequency (1.0/(double)INTEGRATION_TIME);
-    unsigned long period = SIMULATED_CAMERA_CLOCK_FREQ/(1.0/(double)INTEGRATION_TIME);
+    unsigned long period = CalcPeriodFromFrequency (1.0/(double)INTEGRATION_TIME);
+    //unsigned long period = SIMULATED_CAMERA_CLOCK_FREQ/(1.0/(double)INTEGRATION_TIME);
     // initialize P5.5 and make it output (P5.5 SI Pin)
     P5->SEL0 &= ~SI;
     P5->SEL1 &= ~SI;
@@ -94,8 +94,8 @@ void ControlPin_SI_Init()
 void ControlPin_CLK_Init()
 {
     // use 200000 to make a 100K clock, 1 interrupt for each edge
-    //unsigned long period = CalcPeriodFromFrequency (200000);
-    unsigned long period = SIMULATED_CAMERA_CLOCK_FREQ/200000;
+    unsigned long period = CalcPeriodFromFrequency (200000);
+    //unsigned long period = SIMULATED_CAMERA_CLOCK_FREQ/200000;
     // initialize P5.4 and make it output (P5.4 CLK Pin)
     P5->SEL0 &= ~BIT4;
     P5->SEL1 &= ~BIT4;
@@ -126,19 +126,19 @@ void CLK_Handler(void)
     {
         // read data from ADC
         ADC_val = ADC_In();
-        //line_1[pixelCounter] = ADC_val;
+        line_data[pixelCounter] = ADC_val;
         // save into the line buffer
-        if (pixelCounter < TOLERANCE) {
-            line_1[pixelCounter] = OUT_OF_RANGE;
-        } else if (128 - pixelCounter < TOLERANCE) {
-            line_1[pixelCounter] = OUT_OF_RANGE;
-        } else {
-            if (ADC_val < THRESHOLD) {
-                line_1[pixelCounter] = LOW;
-            } else {
-                line_1[pixelCounter] = HIGH;
-            }
-        }
+//        if (pixelCounter < TOLERANCE) {
+//            line[pixelCounter] = OUT_OF_RANGE;
+//        } else if (128 - pixelCounter < TOLERANCE) {
+//            line[pixelCounter] = OUT_OF_RANGE;
+//        } else {
+//            if (ADC_val < THRESHOLD) {
+//                line[pixelCounter] = LOW;
+//            } else {
+//                line[pixelCounter] = HIGH;
+//            }
+//        }
         // increment the pixelCounter
         pixelCounter = (pixelCounter + 1);
         //are we done??

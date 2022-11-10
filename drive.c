@@ -23,6 +23,7 @@
 #include "./lib/camera.h"
 #include "./lib/motors.h"
 #include "./lib/camera.h"
+#include <math.h>
 
 extern  unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
@@ -32,15 +33,21 @@ int leftEdge, rightEdge;
 int position = 64;
 double percentDutyCycle = SERVO_CENTER;
 int differenceChange;
+double center, prevCenter = 0;
+double angle = 0;
+double error, oldError = 0;
 
-extern uint16_t line_1[128];
+double kp = 1/10.0;
+
+extern uint16_t line_data[128];
+extern uint16_t smooth_data[128];
+extern uint16_t binary_data[128];
 extern uint16_t edge_data[128];
+extern uint16_t center_data[128];
+
 uint16_t position_data[128];
 
 extern BOOLEAN g_sendData;
-extern uint16_t binaryCameraData[128];
-extern uint16_t finalCameraData[128];
-extern uint16_t edgeCameraData[128];
 static char str[1024];
 
 void main_delay(int del){
@@ -77,30 +84,24 @@ int main(void) {
 
     EnableInterrupts();  
     while(1) {
-        int i = 0;
-        leftEdge = getLeftEdge(line_1);
-        rightEdge = getRightEdge(line_1);
-        position_data[position] = LOW;
-        position = calculatePosition(leftEdge, rightEdge);
-        if (position != -1) {
-            position_data[position] = HIGH/2;
+        
+        if(g_sendData == TRUE) {
+            smoothCameraData();
+            binarizeCameraData(THRESHOLD);
+            error = calcCenterMass();                  //Returns a value -60 through 60
+            //center = error+60;
+            //updateCenterData(center, prevCenter);
+            angle = error*2.25;
+            turnWheels(angle);
+            if (detect_carpet()) {
+                driveForward(0);
+            } else {
+                driveForward(.35);
+            }
+            //OLED_DisplayCameraData(center_data);
+            //prevCenter = error;
+            g_sendData = FALSE;
         }
-        position_data[FAR_LEFT] = HIGH;
-        position_data[FAR_RIGHT] = HIGH;
-        
-//        if(g_sendData == TRUE) {
-//            OLED_DisplayCameraData(position_data);
-//            g_sendData = FALSE;
-//        }
-        
-//        if (leftEdge != -1 && rightEdge != -1) {
-//            driveForward(0.275);
-//            led2_off();
-//        } else {
-//            driveForward(0);
-//            led2_on(RED);
-//        }
-        percentDutyCycle = moveWheels(position, percentDutyCycle);
     }
 }
 
