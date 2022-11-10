@@ -1,10 +1,22 @@
 #include "msp.h"
 #include "uart.h"
 #include "motors.h"
+#include "camera.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include "led.h"
+
+#define TURNING_LEFT 0
+#define TURNING_RIGHT 1
+#define DRIVING_STRAIGHT 2
+
 
 // Make these arrays 5 deep, since we are using indexes 1-4 for the pins
 static uint32_t DEFAULT_PERIOD_A0[5] = {0,0,0,0,0};
 static uint32_t DEFAULT_PERIOD_A2[5] = {0,0,0,0,0};
+char buffer[1024];
+int turning;
 
 //***************************PWM_Init*******************************
 // PWM output on P2.4, P2.5, P2.6, P2.7
@@ -113,19 +125,19 @@ int TIMER_A2_PWM_Init(uint16_t period, double percentDutyCycle, uint16_t pin)
     // TIMER_A0->CCR[0]
     TIMER_A2->CCR[0] = period;
     // TIMER_A0->CCTL[pin]
-      TIMER_A2->CCTL[0] |= BIT(7);
+    TIMER_A2->CCTL[0] |= BIT(7);
     TIMER_A2->CCTL[pin] |= BIT(6);
     // set the duty cycle
     dutyCycle = (uint16_t) (percentDutyCycle * (double)DEFAULT_PERIOD_A2[pin]);
 
     // CCR[n] contains the dutyCycle just calculated, where n is the pin number
     //TIMER_A0->CCR[pin]
-      TIMER_A2->CCR[pin] = dutyCycle;
+    TIMER_A2->CCR[pin] = dutyCycle;
     
     // Timer CONTROL register
     // TIMER_A0->CTL
     TIMER_A2->CTL = 0x0230;
-      // You will have to use the prescaler (clock divider) to get down to 20ms
+    // You will have to use the prescaler (clock divider) to get down to 20ms
     TIMER_A2->CTL |= BIT(7);
     TIMER_A2->CTL |= BIT(6);
     
@@ -145,7 +157,7 @@ void TIMER_A2_PWM_DutyCycle(double percentDutyCycle, uint16_t pin)
     TIMER_A2->CCR[pin] = (uint16_t) (percentDutyCycle * (double)DEFAULT_PERIOD_A2[pin]);
 }
 
-void initServoMotor() {
+void initServoMotor(void) {
     TIMER_A2_PWM_Init(((SystemCoreClock/8)/50)/2, SERVO_CENTER, 1);
 }
 
@@ -157,7 +169,7 @@ void driveForward(double dutyCycle) {
     TIMER_A0_PWM_DutyCycle(0, 4);
 }
 
-void stopWheels() {
+void stopWheels(void) {
     TIMER_A0_PWM_DutyCycle(0.0, 1);
     TIMER_A0_PWM_DutyCycle(0.0, 2);
     
@@ -165,22 +177,34 @@ void stopWheels() {
     TIMER_A0_PWM_DutyCycle(0.0, 4);
 }
 
-void turnLeft() {
+void turnLeft(void) {
     TIMER_A2_PWM_DutyCycle(SERVO_LEFT, 1);
 }
 
-void turnHalfLeft() {
-    TIMER_A2_PWM_DutyCycle(SERVO_HALF_LEFT, 1);
-}
-
-void turnRight() {
+void turnRight(void) {
     TIMER_A2_PWM_DutyCycle(SERVO_RIGHT, 1);
 }
 
-void turnHalfRight() {
-    TIMER_A2_PWM_DutyCycle(SERVO_HALF_RIGHT, 1);
+void centerWheels(void) {
+    TIMER_A2_PWM_DutyCycle(SERVO_CENTER, 1);
 }
 
-void centerWheels() {
-    TIMER_A2_PWM_DutyCycle(SERVO_CENTER, 1);
+double safeDutyCycle(double dutyCycle) {
+    if (dutyCycle < SERVO_RIGHT) {
+        return SERVO_RIGHT;
+    } else if (dutyCycle > SERVO_LEFT) {
+        return SERVO_LEFT;
+    } else {
+        return dutyCycle;
+    }
+}
+
+void turnWheels(double angle) {
+    //take range from -60 to 60
+    //60 -> far left +2.5
+    //-60 -> far right -2.5
+    //0 -> center
+    double dutyCycle = (angle/60.0)*2.5+SERVO_CENTER;
+    dutyCycle = safeDutyCycle(dutyCycle);
+    TIMER_A2_PWM_DutyCycle(dutyCycle/100.0, 1);
 }

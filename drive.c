@@ -23,23 +23,32 @@
 #include "./lib/camera.h"
 #include "./lib/motors.h"
 #include "./lib/camera.h"
-
-#define CENTER_SHIFT 20
-#define THRESHOLD 12000
-#define TOLERANCE 10
+#include <math.h>
 
 extern  unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
 extern unsigned char OLED_GRAPH_ARR[1024];
 
-double leftZerosPercent;
-double rightZerosPercent;
+int leftEdge, rightEdge;
+int position = 64;
+double percentDutyCycle = SERVO_CENTER;
+int differenceChange;
+double center, prevCenter = 0;
+double angle = 0;
+double error, oldError = 0;
 
-extern uint16_t line[128];
+double kp = 1/10.0;
+
+extern uint16_t line_data[128];
+extern uint16_t smooth_data[128];
+extern uint16_t binary_data[128];
+extern uint16_t edge_data[128];
+extern uint16_t center_data[128];
+
+uint16_t position_data[128];
+
 extern BOOLEAN g_sendData;
-extern uint16_t binaryCameraData[128];
-extern uint16_t finalCameraData[128];
-static char str[100];
+static char str[1024];
 
 void main_delay(int del){
     volatile int i;
@@ -75,31 +84,23 @@ int main(void) {
 
     EnableInterrupts();  
     while(1) {
-        int i = 0;
-        smoothCameraData();
-        binarizeCameraData(THRESHOLD);
-        center_camera_data(CENTER_SHIFT);
+        
         if(g_sendData == TRUE) {
-            OLED_DisplayCameraData(finalCameraData);
+            smoothCameraData();
+            binarizeCameraData(THRESHOLD);
+            error = calcCenterMass();                  //Returns a value -60 through 60
+            //center = error+60;
+            //updateCenterData(center, prevCenter);
+            angle = error*2.25;
+            turnWheels(angle);
+            if (detect_carpet()) {
+                driveForward(0);
+            } else {
+                driveForward(.35);
+            }
+            //OLED_DisplayCameraData(center_data);
+            //prevCenter = error;
             g_sendData = FALSE;
-        }
-        calc_delta_left(finalCameraData);
-        calc_delta_right(finalCameraData);
-        //uart0_put("Left: ");
-        //sprintf(str, "%f\r\n", leftZerosPercent);
-        //uart0_put(str);
-        driveForward(0.25);
-        //if(leftZerosPercent + rightZerosPercent > 0.95) {
-            //stopWheels();
-        //}
-        if(leftZerosPercent > 0.5) {
-            turnRight();
-        }
-        else if(rightZerosPercent > 0.5) {
-            turnLeft();
-        }
-        else {
-            centerWheels();
         }
     }
 }
