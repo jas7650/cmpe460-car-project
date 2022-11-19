@@ -25,24 +25,24 @@
 #include "./lib/camera.h"
 #include <math.h>
 
-extern  unsigned char OLED_clr_data[1024];
+extern unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
 extern unsigned char OLED_GRAPH_ARR[1024];
 
-int leftEdge, rightEdge;
-int position = 64;
 double percentDutyCycle = SERVO_CENTER;
 int differenceChange;
 double center, prevCenter = 0;
-double angle = 0;
-double error, oldError = 0;
+double angle, oldAngle = 0;
+double errorArray[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+double error, currentError, oldError1, oldError2 = 0;
 
-double kp = 1/10.0;
+double kp = .57;
+double kd = 0.3;
+double ki = 0;
 
 extern uint16_t line_data[128];
 extern uint16_t smooth_data[128];
 extern uint16_t binary_data[128];
-extern uint16_t edge_data[128];
 extern uint16_t center_data[128];
 
 uint16_t position_data[128];
@@ -55,6 +55,24 @@ void main_delay(int del){
     for (i=0; i<del*50000; i++){
         ;// Do nothing
     }
+}
+
+double get_integral(void) {
+    double sum;
+    int i;
+    for (i = 1; i < 10; i++) {
+        sum += (errorArray[i]+errorArray[i-1])/2.0;
+    }
+    return sum;
+}
+
+double sum_error(int index) {
+    double sum;
+    int i;
+    for (i = index; i < index+7; i++) {
+        sum += errorArray[i];
+    }
+    return sum;
 }
 
 int main(void) {
@@ -86,12 +104,19 @@ int main(void) {
     while(1) {
         
         if(g_sendData == TRUE) {
+            int i;
             smoothCameraData();
             binarizeCameraData(THRESHOLD);
             error = calcCenterMass();                  //Returns a value -60 through 60
+            for (i = 1; i < 10; i++) {
+                errorArray[i] = errorArray[i-1];
+            }
+            errorArray[0] = error;
+            currentError = sum_error(0);
             //center = error+60;
             //updateCenterData(center, prevCenter);
-            angle = error*2.25;
+            angle = oldAngle + kp*(currentError-oldError1) + ki*((currentError+oldError1)/2) + kd*(currentError-2*oldError1+oldError2);
+            //angle = error*2.25;
             turnWheels(angle);
             if (detect_carpet()) {
                 driveForward(0);
@@ -100,8 +125,10 @@ int main(void) {
             }
             //OLED_DisplayCameraData(center_data);
             //prevCenter = error;
+            oldAngle = angle;
+            oldError2 = oldError1;
+            oldError1 = currentError;
             g_sendData = FALSE;
         }
     }
 }
-

@@ -22,7 +22,7 @@
 #define RIGHT_EDGE -16383
 #define FAR_LEFT TOLERANCE
 #define FAR_RIGHT 128-TOLERANCE
-#define OFFSET -4
+#define OFFSET -5
 #define CENTER 64-OFFSET
 
 void INIT_Camera(void);
@@ -30,9 +30,5 @@ uint16_t fivePointAverage(uint16_t a, uint16_t b, uint16_t c, uint16_t d, uint16
 void smoothCameraData(void);
 void binarizeCameraData(uint16_t threshold);
 BOOLEAN detect_carpet(void);
-void setEdgesHigh(int leftEdge[], int rightEdge[]);
-int getLeftEdge(void);
-int getRightEdge(void);
 int calculatePosition(int leftEdge, int rightEdge);
 double calcCenterMass(void);
-void updateCenterData(double center, double prevCenter);

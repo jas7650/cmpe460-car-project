@@ -169,26 +169,6 @@ void driveForward(double dutyCycle) {
     TIMER_A0_PWM_DutyCycle(0, 4);
 }
 
-void stopWheels(void) {
-    TIMER_A0_PWM_DutyCycle(0.0, 1);
-    TIMER_A0_PWM_DutyCycle(0.0, 2);
-    
-    TIMER_A0_PWM_DutyCycle(0.0, 3);
-    TIMER_A0_PWM_DutyCycle(0.0, 4);
-}
-
-void turnLeft(void) {
-    TIMER_A2_PWM_DutyCycle(SERVO_LEFT, 1);
-}
-
-void turnRight(void) {
-    TIMER_A2_PWM_DutyCycle(SERVO_RIGHT, 1);
-}
-
-void centerWheels(void) {
-    TIMER_A2_PWM_DutyCycle(SERVO_CENTER, 1);
-}
-
 double safeDutyCycle(double dutyCycle) {
     if (dutyCycle < SERVO_RIGHT) {
         return SERVO_RIGHT;
