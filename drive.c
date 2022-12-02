@@ -37,9 +37,8 @@ double errorArray[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 double error, lastError1, lastError2, currentError, oldError1, oldError2 = 0;
 
 double kp = 2.4;
-//double kp = 2.4;
 double kd = 0.45;
-double ki = 0.125;
+double ki = 0.1;
 
 extern uint16_t line_data[128];
 extern uint16_t smooth_data[128];
@@ -76,6 +75,22 @@ double sum_error(int index) {
     return sum;
 }
 
+void updateK(double error) {
+    if (fabs(error) > 15) {
+        kp = 2.8;
+        kd = .5;
+        ki = .1;
+    } else if (fabs(error) > 5) {
+        kp = 2.6;
+        kd = .5;
+        ki = .1;
+    } else {
+        kp = .5;
+        kd = .45;
+        ki = .12;
+    }
+}
+
 int main(void) {
     //initialize OLED
     OLED_Init();
@@ -109,27 +124,15 @@ int main(void) {
             smoothCameraData();
             binarizeCameraData(THRESHOLD);
             error = calcCenterMass();                  //Returns a value -60 through 60
-//            for (i = 1; i < 10; i++) {
-//                errorArray[i] = errorArray[i-1];
-//            }
-//            errorArray[0] = error;
-//            currentError = sum_error(0);
-            //center = error+60;
-            //updateCenterData(center, prevCenter);
-            //angle = oldAngle + kp*error;
-            angle = kp*(error) + kd*(error-2*lastError1+lastError2) + ki*((error+lastError1)/2);// + ki*((currentError+oldError1)/2) + kd*(currentError-2*oldError1+oldError2);
-            //angle = error*2.25;
+            angle = kp*(error) + kd*(error-2*lastError1+lastError2) + ki*((error+lastError1)/2);
             turnWheels(angle);
             if (detect_carpet()) {
                 driveForward(0);
             } else {
                 updateSpeed(error);
+                updateK(error);
             }
             //OLED_DisplayCameraData(center_data);
-            //prevCenter = error;
-//            oldAngle = angle;
-//            oldError2 = oldError1;
-//            oldError1 = currentError;
             lastError2 = lastError1;
             lastError1 = error;
             g_sendData = FALSE;

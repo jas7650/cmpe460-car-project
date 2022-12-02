@@ -22,7 +22,7 @@
 #define RIGHT_EDGE -16383
 #define FAR_LEFT TOLERANCE
 #define FAR_RIGHT 128-TOLERANCE
-#define OFFSET -2
+#define OFFSET -3
 #define CENTER 64-OFFSET
 
 void INIT_Camera(void);
