@@ -162,10 +162,26 @@ void initServoMotor(void) {
 }
 
 void driveForward(double dutyCycle) {
-    TIMER_A0_PWM_DutyCycle(dutyCycle, 1);
+    TIMER_A0_PWM_DutyCycle(dutyCycle, 1); //right
     TIMER_A0_PWM_DutyCycle(0, 2);
     
-    TIMER_A0_PWM_DutyCycle(dutyCycle, 3);
+    TIMER_A0_PWM_DutyCycle(dutyCycle, 3); //left
+    TIMER_A0_PWM_DutyCycle(0, 4);
+}
+
+void differentialSpeed(double error) {
+    double pin1, pin2 = 0;
+    if (error < 0) {
+        pin1 = .325;
+        pin2 = .425;
+    } else {
+        pin1 = .425;
+        pin2 = .35;
+    }
+    TIMER_A0_PWM_DutyCycle(pin1, 1); //right
+    TIMER_A0_PWM_DutyCycle(0, 2);
+    
+    TIMER_A0_PWM_DutyCycle(pin2, 3); //left
     TIMER_A0_PWM_DutyCycle(0, 4);
 }
 
@@ -187,4 +203,12 @@ void turnWheels(double angle) {
     double dutyCycle = (angle/60.0)*2.5+SERVO_CENTER;
     dutyCycle = safeDutyCycle(dutyCycle);
     TIMER_A2_PWM_DutyCycle(dutyCycle/100.0, 1);
+}
+
+void updateSpeed(double error) {
+    if (fabs(error) < 20.0) {
+        driveForward(.4);
+    } else {
+        differentialSpeed(error);
+    }
 }

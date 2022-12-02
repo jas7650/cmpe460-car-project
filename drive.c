@@ -34,11 +34,12 @@ int differenceChange;
 double center, prevCenter = 0;
 double angle, oldAngle = 0;
 double errorArray[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-double error, currentError, oldError1, oldError2 = 0;
+double error, lastError1, lastError2, currentError, oldError1, oldError2 = 0;
 
-double kp = .57;
-double kd = 0.3;
-double ki = 0;
+double kp = 2.4;
+//double kp = 2.4;
+double kd = 0.45;
+double ki = 0.125;
 
 extern uint16_t line_data[128];
 extern uint16_t smooth_data[128];
@@ -108,26 +109,29 @@ int main(void) {
             smoothCameraData();
             binarizeCameraData(THRESHOLD);
             error = calcCenterMass();                  //Returns a value -60 through 60
-            for (i = 1; i < 10; i++) {
-                errorArray[i] = errorArray[i-1];
-            }
-            errorArray[0] = error;
-            currentError = sum_error(0);
+//            for (i = 1; i < 10; i++) {
+//                errorArray[i] = errorArray[i-1];
+//            }
+//            errorArray[0] = error;
+//            currentError = sum_error(0);
             //center = error+60;
             //updateCenterData(center, prevCenter);
-            angle = oldAngle + kp*(currentError-oldError1) + ki*((currentError+oldError1)/2) + kd*(currentError-2*oldError1+oldError2);
+            //angle = oldAngle + kp*error;
+            angle = kp*(error) + kd*(error-2*lastError1+lastError2) + ki*((error+lastError1)/2);// + ki*((currentError+oldError1)/2) + kd*(currentError-2*oldError1+oldError2);
             //angle = error*2.25;
             turnWheels(angle);
             if (detect_carpet()) {
                 driveForward(0);
             } else {
-                driveForward(.35);
+                updateSpeed(error);
             }
             //OLED_DisplayCameraData(center_data);
             //prevCenter = error;
-            oldAngle = angle;
-            oldError2 = oldError1;
-            oldError1 = currentError;
+//            oldAngle = angle;
+//            oldError2 = oldError1;
+//            oldError1 = currentError;
+            lastError2 = lastError1;
+            lastError1 = error;
             g_sendData = FALSE;
         }
     }

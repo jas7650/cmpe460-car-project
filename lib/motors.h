@@ -12,3 +12,4 @@ void initServoMotor(void);
 void driveForward(double dutyCycle);
 double moveWheels(double center, double dutyCycle);
 void turnWheels(double angle);
+void updateSpeed(double error);

@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define TOLERANCE 23
+#define TOLERANCE 20
 #define THRESHOLD 8000
 #define HIGH 16383
 #define LOW 0
@@ -22,7 +22,7 @@
 #define RIGHT_EDGE -16383
 #define FAR_LEFT TOLERANCE
 #define FAR_RIGHT 128-TOLERANCE
-#define OFFSET -5
+#define OFFSET -2
 #define CENTER 64-OFFSET
 
 void INIT_Camera(void);

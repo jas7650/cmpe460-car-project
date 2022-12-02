@@ -70,9 +70,9 @@ double calcCenterMass(void) {
     }
     d_center = ((double)y/(double)x);
     d_center = -1*(((d_center/(128-(2*TOLERANCE)))*120)-TOLERANCE-60);
-    if (abs((int)(d_center+0.5)) < 4) {
-        return 0;
-    }
+//    if (abs((int)(d_center+0.5)) < 4) {
+//        return 0;
+//    }
     return d_center;
 }
 
