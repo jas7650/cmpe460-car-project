@@ -50,6 +50,9 @@ uint16_t position_data[128];
 extern BOOLEAN g_sendData;
 static char str[1024];
 
+int mode = 0;
+int start = 0;
+
 void main_delay(int del){
     volatile int i;
     for (i=0; i<del*50000; i++){
@@ -91,6 +94,61 @@ void updateK(double error) {
     }
 }
 
+void fast_mode() {
+    while(1){
+    if(g_sendData == TRUE) {
+        int i;
+        smoothCameraData();
+        binarizeCameraData(THRESHOLD);
+        error = calcCenterMass(); //Returns a value -60 through 60
+        angle = kp*(error) + kd*(error-2*lastError1+lastError2) + ki*((error+lastError1)/2);
+        turnWheels(angle);
+        if (detect_carpet()) {
+            driveForward(0);
+        } else {
+            updateSpeed(error);
+            updateK(error);
+        }
+        lastError2 = lastError1;
+        lastError1 = error;
+        g_sendData = FALSE;
+    }
+}
+}
+
+void safe_mode() {
+    while(1) {
+    int i;
+    kp = 2.5;
+    kd = 0;
+    ki = 0.1;
+    if(g_sendData == TRUE) {
+        smoothCameraData();
+        binarizeCameraData(THRESHOLD);
+        error = calcCenterMass();                  //Returns a value -60 through 60
+        for (i = 1; i < 10; i++) {
+            errorArray[i] = errorArray[i-1];
+        }
+        errorArray[0] = error;
+        currentError = sum_error(0);
+        angle = kp*(error) + ki*((currentError+oldError1)/2) + kd*(error-2*lastError1-lastError2);
+        turnWheels(angle);
+        if (detect_carpet()) {
+            driveForward(0);
+        } else {
+            driveForward(0.35);
+        }
+        oldAngle = angle;
+        oldError2 = oldError1;
+        oldError1 = currentError;
+        g_sendData = FALSE;
+        lastError2 = lastError1;
+        lastError1 = error;
+        led2_off();
+    }
+}
+}
+
 int main(void) {
     //initialize OLED
     OLED_Init();
@@ -118,24 +176,26 @@ int main(void) {
 
     EnableInterrupts();  
     while(1) {
-        
-        if(g_sendData == TRUE) {
-            int i;
-            smoothCameraData();
-            binarizeCameraData(THRESHOLD);
-            error = calcCenterMass();                  //Returns a value -60 through 60
-            angle = kp*(error) + kd*(error-2*lastError1+lastError2) + ki*((error+lastError1)/2);
-            turnWheels(angle);
-            if (detect_carpet()) {
-                driveForward(0);
-            } else {
-                updateSpeed(error);
-                updateK(error);
+        while(start == 0) {
+            if(Switch1_Pressed()) {
+                start = 1;
             }
-            //OLED_DisplayCameraData(center_data);
-            lastError2 = lastError1;
-            lastError1 = error;
-            g_sendData = FALSE;
+            if(Switch2_Pressed()) {
+                if(mode == 1) {
+                    led2_off();
+                    mode = 0;
+                    led2_on(mode);
+                } else {
+                    led2_off();
+                    mode = 1;
+                    led2_on(mode);
+                }
+            }
+        }
+        if(mode == 0) {
+            fast_mode();
+        } else {
+            safe_mode();
         }
     }
 }
