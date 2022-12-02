@@ -17,6 +17,7 @@ static uint32_t DEFAULT_PERIOD_A0[5] = {0,0,0,0,0};
 static uint32_t DEFAULT_PERIOD_A2[5] = {0,0,0,0,0};
 char buffer[1024];
 int turning;
+double motorSpeed;
 
 //***************************PWM_Init*******************************
 // PWM output on P2.4, P2.5, P2.6, P2.7
@@ -187,4 +188,29 @@ void turnWheels(double angle) {
     double dutyCycle = (angle/60.0)*2.5+SERVO_CENTER;
     dutyCycle = safeDutyCycle(dutyCycle);
     TIMER_A2_PWM_DutyCycle(dutyCycle/100.0, 1);
+}
+
+void updateMotorSpeed(char choice) {
+    switch(choice) {
+        case '0':
+            motorSpeed = 0.0;
+            break;
+        case '1':
+            motorSpeed = 0.25;
+            break;
+        case '2':
+            motorSpeed = 0.3;
+            break;
+        case '3':
+            motorSpeed = 0.35;
+            break;
+        case '4':
+            motorSpeed = 0.4;
+            break;
+        case '5':
+            motorSpeed = 0.45;
+            break;
+        default:
+            motorSpeed = 0.35; 
+    }
 }

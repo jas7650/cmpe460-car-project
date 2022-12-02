@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "msp.h"
+#include "./lib/bluetooth.h"
 #include "./lib/uart.h"
 #include "./lib/oled.h"
 #include "./lib/led.h"
@@ -25,6 +26,9 @@
 #include "./lib/camera.h"
 #include <math.h>
 
+char phoneCode;
+extern double motorSpeed;
+
 extern unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
 extern unsigned char OLED_GRAPH_ARR[1024];
@@ -35,10 +39,11 @@ double center, prevCenter = 0;
 double angle, oldAngle = 0;
 double errorArray[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 double error, currentError, oldError1, oldError2 = 0;
+double lastError1, lastError2 = 0;
 
-double kp = .57;
-double kd = 0.3;
-double ki = 0;
+double kp = 2.5;
+double kd = 0;
+double ki = 0.1;
 
 extern uint16_t line_data[128];
 extern uint16_t smooth_data[128];
@@ -69,7 +74,7 @@ double get_integral(void) {
 double sum_error(int index) {
     double sum;
     int i;
-    for (i = index; i < index+7; i++) {
+    for (i = index; i < index+3; i++) {
         sum += errorArray[i];
     }
     return sum;
@@ -83,7 +88,8 @@ int main(void) {
     OLED_display_on();
     
     //initialize uart
-    uart0_init();
+    //uart0_init();
+    //uart2_init();
     
     //initializations
     DisableInterrupts();
@@ -100,11 +106,10 @@ int main(void) {
     Switch2_Init();
     EnableSysTickTimer();
 
-    EnableInterrupts();  
+    EnableInterrupts();
     while(1) {
-        
+        int i;
         if(g_sendData == TRUE) {
-            int i;
             smoothCameraData();
             binarizeCameraData(THRESHOLD);
             error = calcCenterMass();                  //Returns a value -60 through 60
@@ -115,13 +120,17 @@ int main(void) {
             currentError = sum_error(0);
             //center = error+60;
             //updateCenterData(center, prevCenter);
-            angle = oldAngle + kp*(currentError-oldError1) + ki*((currentError+oldError1)/2) + kd*(currentError-2*oldError1+oldError2);
+            angle = kp*(error) + ki*((currentError+oldError1)/2) + kd*(error-2*lastError1-lastError2);
             //angle = error*2.25;
             turnWheels(angle);
             if (detect_carpet()) {
                 driveForward(0);
             } else {
-                driveForward(.35);
+                if(motorSpeed == 0) {
+                    driveForward(0.35);
+                } else {
+                    driveForward(motorSpeed);
+                }
             }
             //OLED_DisplayCameraData(center_data);
             //prevCenter = error;
@@ -129,6 +138,8 @@ int main(void) {
             oldError2 = oldError1;
             oldError1 = currentError;
             g_sendData = FALSE;
+            lastError2 = lastError1;
+            lastError1 = error;
         }
     }
 }
