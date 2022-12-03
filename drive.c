@@ -97,6 +97,7 @@ void updateK(double error) {
 }
 
 void fast_mode() {
+    main_delay(150);
     while(1){
         if(g_sendData == TRUE) {
             int i;
@@ -108,7 +109,7 @@ void fast_mode() {
             if (detect_carpet()) {
                 driveForward(0);
             } else {
-                updateSpeed(error);
+                differentialSpeed(error);
                 updateK(error);
             }
             lastError2 = lastError1;
@@ -119,6 +120,7 @@ void fast_mode() {
 }
 
 void safe_mode() {
+    main_delay(150);
     while(1) {
         int i;
         kp = 2.5;
@@ -128,12 +130,7 @@ void safe_mode() {
             smoothCameraData();
             binarizeCameraData(THRESHOLD);
             error = calcCenterMass();                  //Returns a value -60 through 60
-            for (i = 1; i < 10; i++) {
-                errorArray[i] = errorArray[i-1];
-            }
-            errorArray[0] = error;
-            currentError = sum_error(0);
-            angle = kp*(error) + ki*((currentError+oldError1)/2) + kd*(error-2*lastError1-lastError2);
+            angle = kp*(error) + ki*((error+lastError1)/2) + kd*(error-2*lastError1-lastError2);
             turnWheels(angle);
             if (detect_carpet()) {
                 driveForward(0);
@@ -176,6 +173,7 @@ int main(void) {
     EnableSysTickTimer();
 
     EnableInterrupts();  
+    turnWheels(0);
     while(1) {
         while(start == FALSE) {
             if(Switch1_Pressed()) {

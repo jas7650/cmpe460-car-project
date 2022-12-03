@@ -174,23 +174,14 @@ void differentialSpeed(double error) {
     if (error < -7) {
         pin1 = .325;
         pin2 = .425;
-    } 
-//    else if (error < -3) {
-//        pin1 = .375;
-//        pin2 = .425;
-//    } 
-    else if (error < 5) {
+    } else if (error < 5) {
         pin1 = .4;
         pin2 = .4;
-    } 
-//    else if (error < 10) {
-//        pin1 = .425;
-//        pin2 = .375;
-//    }
-    else {
+    } else {
         pin1 = .425;
         pin2 = .375;
     }
+    
     TIMER_A0_PWM_DutyCycle(pin1, 1); //right
     TIMER_A0_PWM_DutyCycle(0, 2);
     
