@@ -171,21 +171,25 @@ void driveForward(double dutyCycle) {
 
 void differentialSpeed(double error) {
     double pin1, pin2 = 0;
-    if (error < -10) {
+    if (error < -7) {
         pin1 = .325;
         pin2 = .425;
-    } else if (error < -3) {
-        pin1 = .375;
-        pin2 = .425;
-    } else if (error < 3) {
-        pin1 = .45;
-        pin2 = .45;
-    } else if (error < 10) {
+    } 
+//    else if (error < -3) {
+//        pin1 = .375;
+//        pin2 = .425;
+//    } 
+    else if (error < 5) {
+        pin1 = .4;
+        pin2 = .4;
+    } 
+//    else if (error < 10) {
+//        pin1 = .425;
+//        pin2 = .375;
+//    }
+    else {
         pin1 = .425;
         pin2 = .375;
-    } else {
-        pin1 = .425;
-        pin2 = .335;
     }
     TIMER_A0_PWM_DutyCycle(pin1, 1); //right
     TIMER_A0_PWM_DutyCycle(0, 2);
@@ -215,9 +219,5 @@ void turnWheels(double angle) {
 }
 
 void updateSpeed(double error) {
-//    if (fabs(error) < 10.0) {
-//        driveForward(.4);
-//    } else {
-        differentialSpeed(error);
-    //}
+    differentialSpeed(error);
 }

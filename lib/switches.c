@@ -105,3 +105,27 @@ void Switch2_Interrupt_Init(void)
     // enable interrupts  (// clear the I bit    )
     EnableInterrupts();              
 }
+
+BOOLEAN Switch1_Pressed(void)
+{
+    BOOLEAN retVal = FALSE;
+    // check if pressed
+    if (P1->IN & BIT1)
+        retVal = FALSE;
+    else
+        retVal = TRUE;
+
+    return (retVal);              // return TRUE(pressed) or FALSE(not pressed)
+}
+
+BOOLEAN Switch2_Pressed(void)
+{
+    BOOLEAN retVal = FALSE;
+    // check if pressed
+    if (P1->IN & BIT4)
+        retVal = FALSE;
+    else
+        retVal = TRUE;
+
+    return (retVal);              // return TRUE(pressed) or FALSE(not pressed)
+}
