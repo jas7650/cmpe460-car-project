@@ -24,8 +24,9 @@
 #include "./lib/motors.h"
 #include "./lib/camera.h"
 #include <math.h>
-#define FAST 0
-#define SLOW 1
+#define FAST_1 0
+#define FAST_2 1
+#define SLOW 2
 
 extern unsigned char OLED_clr_data[1024];
 extern unsigned char OLED_TEXT_ARR[1024];
@@ -96,8 +97,27 @@ void updateK(double error) {
     }
 }
 
-void fast_mode() {
-    main_delay(150);
+void fast_mode_2() {
+    main_delay(75);
+    while(1){
+        if(g_sendData == TRUE) {
+            int i;
+            smoothCameraData();
+            binarizeCameraData(THRESHOLD);
+            error = calcCenterMass(); //Returns a value -60 through 60
+            angle = kp*(error) + kd*(error-2*lastError1+lastError2) + ki*((error+lastError1)/2);
+            turnWheels(angle);
+            differentialSpeed(error);
+            updateK(error);
+            lastError2 = lastError1;
+            lastError1 = error;
+            g_sendData = FALSE;
+        }
+    }
+}
+
+void fast_mode_1() {
+    main_delay(75);
     while(1){
         if(g_sendData == TRUE) {
             int i;
@@ -120,7 +140,7 @@ void fast_mode() {
 }
 
 void safe_mode() {
-    main_delay(150);
+    main_delay(75);
     while(1) {
         int i;
         kp = 2.5;
@@ -174,6 +194,7 @@ int main(void) {
 
     EnableInterrupts();  
     turnWheels(0);
+    mode = FAST_1;
     while(1) {
         while(start == FALSE) {
             if(Switch1_Pressed()) {
@@ -181,8 +202,11 @@ int main(void) {
             }
             if(Switch2_Pressed()) {
                 if(mode == SLOW) {
-                    mode = FAST;
+                    mode = FAST_1;
                     led2_on(RED);
+                } else if (mode == FAST_1) {
+                    mode = FAST_2;
+                    led2_on(BLUE);
                 } else {
                     mode = SLOW;
                     led2_on(GREEN);
@@ -190,8 +214,10 @@ int main(void) {
             }
         }
         led2_off();
-        if(mode == FAST) {
-            fast_mode();
+        if(mode == FAST_1) {
+            fast_mode_1();
+        } else if (mode == FAST_2) {
+            fast_mode_2();
         } else {
             safe_mode();
         }
